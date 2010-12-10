@@ -622,12 +622,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Remove (string path, bool force, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			path = NormalizePath (Path.GetFullPath (path));
-            
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("tree,relpath = workingtree.WorkingTree.open_containing(path=ur\"{0}\")\n", path);
-			command.AppendFormat ("tree.remove(files=[relpath], force={1})\n", path, force? "True": "False");
-			
-			lock (lockme){ run (null, command.ToString ()); }
+			RunMercurialRepoCommand (path, "commands.remove(repo.ui,repo,'{0}',force={1})", path, force? "True": "False");
 		}
 
 		public override void Resolve (string path, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
