@@ -339,10 +339,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		}// CanGetAnnotations
 
 		/// <summary>
-		/// Finds the bzr branch root for a path
+		/// Finds the repository root for a path
 		/// </summary>
 		/// <param name="localPath">
-		/// A <see cref="System.String"/>: A path somewhere in a bzr branch
+		/// A <see cref="System.String"/>: A path somewhere in a hg repository
 		/// </param>
 		/// <returns>
 		/// A <see cref="System.String"/>: The path to the branch root,
@@ -350,7 +350,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// </returns>
 		public static string GetLocalBasePath (string localPath) {
 			if (null == localPath){ return string.Empty; }
-			if (Directory.Exists (Path.Combine (localPath, ".bzr"))){ return localPath; }
+			if (Directory.Exists (Path.Combine (localPath, ".hg"))){ return localPath; }
 
 			return GetLocalBasePath (Path.GetDirectoryName (localPath));
 		}// GetLocalBasePath

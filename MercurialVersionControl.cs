@@ -115,6 +115,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 			VersionStatus rs = VersionStatus.Unversioned;
 			Revision rr = null;
 			
+			Console.WriteLine ("Creating node for status {0}", status.Filename);
+			
 			VersionStatus vstatus = ConvertStatus (status.Status);
 			// System.Console.WriteLine ("Converted {0} to {1} for {2}", status.Status, vstatus, status.Filename);
 
@@ -166,11 +168,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			// System.Console.WriteLine ("Requested repository reference for {0}", path);
 			try {
-				if (string.IsNullOrEmpty (MercurialRepository.GetLocalBasePath (path.FullPath)))
+				string url = MercurialRepository.GetLocalBasePath (path.FullPath);
+				if (string.IsNullOrEmpty (url)) {
 					return null;
-				string url = Client.GetPathUrl (path.FullPath);
-				// System.Console.WriteLine ("Got {0} for {1}", url, path);
-				return new MercurialRepository (this, url);
+				}
+				return new MercurialRepository (this, string.Format ("file://{0}", url));
 			} catch (Exception ex) {
 				// No bzr
 				LoggingService.LogError (ex.ToString ());

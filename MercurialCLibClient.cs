@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Collections.Generic;
@@ -144,23 +145,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override string Version {
 			get {
 				if (null == version) {
-				   List<IntPtr> pychunks = null;
-				   int[] chunks = new int[3];
 					lock (lockme) {
-					   try {
-							pychunks = run (new List<string>{"major", "minor", "other"}, "major,minor,other = bzrlib.api.get_current_api_version(object_with_api=None)");
-							for (int i=0; i<3; ++i) {
-								chunks[i] = PyInt_AsLong (pychunks[i]);
-							}
-						} finally {
-							if (null != pychunks) {
-								foreach (IntPtr chunk in pychunks) {
-									Py_DecRef (chunk);
-								}
-							}
-						}
+						version = StringFromPython (run (new List<string>{"version"}, "version = util.version()")[0]);
 					}
-					version = string.Format ("{0}.{1}.{2}", chunks[0], chunks[1], chunks[2]);
 				}
 				return version;
 			}
@@ -184,9 +171,16 @@ namespace MonoDevelop.VersionControl.Mercurial
 				// Imports
 				string[] imports = new string[]{
 					"import sys",
-					"if('win32'==sys.platform): sys.path.append('C:/Program Files/Mercurial/lib/library.zip')",
 					"import traceback",
 					"import StringIO",
+					"import mercurial",
+					"from mercurial import hg",
+					"from mercurial import ui",
+					"from mercurial import util",
+					"from mercurial import commands",
+				};
+				/*
+					"if('win32'==sys.platform): sys.path.append('C:/Program Files/Mercurial/lib/library.zip')",
 					"import bzrlib",
 					"from bzrlib import plugin",
 					"bzrlib.plugin.load_plugins()",
@@ -210,7 +204,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 					"from bzrlib import commands",
 					"from bzrlib import errors",
 					"from bzrlib import foreign"
-				};
+				*/
 				
 				foreach (string import in imports) {
 					run (null, import);
@@ -687,25 +681,35 @@ namespace MonoDevelop.VersionControl.Mercurial
 			bool modified = false;
 			IntPtr  tuple = IntPtr.Zero,
 					listlen = IntPtr.Zero;
+			string statusText = string.Empty;
 					
 			path = NormalizePath (Path.GetFullPath (path).Replace ("{", "{{").Replace ("}", "}}"));// escape for string.format
-			command.AppendFormat ("tree,relpath = workingtree.WorkingTree.open_containing(path=ur\"{0}\")\n", path);
+			command.AppendFormat ("repo = hg.repository(ui.ui(),'{0}')\n", path);
 			
-			if (null == revision || MercurialRevision.HEAD == revision.Rev || MercurialRevision.NONE == revision.Rev) {
-				command.AppendFormat ("rev = tree.basis_tree()\n");
-				command.AppendFormat ("totree = tree\n");
-				rev = MercurialRevision.HEAD;
-			} else {
-				command.AppendFormat ("revspec = revisionspec.RevisionSpec.from_string(spec=\"{0}\")\n", ((MercurialRevision)revision.GetPrevious ()).Rev);
-				command.AppendFormat ("rev = tree.branch.repository.revision_tree(revision_id=revspec.in_history(branch=tree.branch).rev_id)\n");
-				command.AppendFormat ("revspec = revisionspec.RevisionSpec.from_string(spec=\"{0}\")\n", revision.Rev);
-				command.AppendFormat ("totree = tree.branch.repository.revision_tree(revision_id=revspec.in_history(branch=tree.branch).rev_id)\n");
-				rev = revision.Rev;
+			if (null != revision && MercurialRevision.HEAD != revision.Rev && MercurialRevision.NONE != revision.Rev) {
+				rev = string.Format (",change={0}", revision.Rev);
 			}
-			command.AppendFormat ("status = totree.changes_from(other=rev, specific_files=[relpath])\n");
 			
+			command.Append ("repo.ui.pushbuffer()\n");
+			command.AppendFormat ("commands.status(repo.ui,repo,'{0}'{1})\n", path, rev);
+			command.Append ("status=repo.ui.popbuffer()\n");
 			lock (lockme) {
-				run (null, command.ToString ());
+				statusText = StringFromPython (run (new List<string>{"status"}, command.ToString ())[0]);
+			}
+			Console.WriteLine (statusText);
+			
+			foreach (string line in statusText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
+				string[] tokens = line.Split (new[]{' '}, 2);
+				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
+				statuses.Add (new LocalStatus (string.Empty, Path.GetFullPath (NormalizePath (tokens[1])), (ItemStatus)tokens[0][0]));
+			}
+			if (0 != statuses.Count) {
+				statuses.Insert (0, new LocalStatus (string.Empty, GetLocalBasePath (path), ItemStatus.Modified));
+			}
+			
+			/*
+			lock (lockme) {
+				run (new List<string>{"status"}, command.ToString ());
 				
 				string[] types = new string[]{ "added", "removed", "modified", "unversioned" };
 				string filename;
@@ -765,6 +769,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			if (null == mystatus) {
 				statuses.Insert (0, new LocalStatus ("-1", path, modified? ItemStatus.Modified: ItemStatus.Unchanged));
 			}// path isn't in modified list
+			*/
 			
 			return statuses;
 		}
