@@ -322,7 +322,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			// Need history for this
 			path = NormalizePath (Path.GetFullPath (path));
 			return new[]{ new DiffInfo (GetLocalBasePath (path), path, 
-			                  RunMercurialRepoCommand (path, "commands.diff(repo.ui,repo,'{2}',rev='{0},{1}')", fromRevision.Rev, toRevision.Rev, path))
+			                  RunMercurialRepoCommand (path, "commands.diff(repo.ui,repo,'{2}',rev='{0}:{1}')", fromRevision.Rev, toRevision.Rev, path))
 			};
 			
 			/*
@@ -356,10 +356,45 @@ namespace MonoDevelop.VersionControl.Mercurial
 			*/
 		}
 
-		static Regex revisionRegex = new Regex (@"^\s*(?<revision>[\d\.]+): (?<committer>.*) (?<date>\d{4}-\d{2}-\d{2}) (?<message>.*)", RegexOptions.Compiled);
+		// static Regex revisionRegex = new Regex (@"^\s*(?<revision>[\d\.]+): (?<committer>.*) (?<date>\d{4}-\d{2}-\d{2}) (?<message>.*)", RegexOptions.Compiled);
+		
+		static string localizedChangeset = GettextCatalog.GetString ("changeset:");
+		static string localizedDate = GettextCatalog.GetString ("date:");
+		static string localizedUser = GettextCatalog.GetString ("user:");
+		static string localizedMessage = GettextCatalog.GetString ("summary:");
+			
 		public override MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since)
 		{
-			return new[]{ new MercurialRevision (repo, MercurialRevision.HEAD) };
+			localFile = NormalizePath (Path.GetFullPath (localFile));
+			string revText = ",rev=None"; // FIXME: string.Format (",rev='-1:{0}'", since.Rev);
+			List<MercurialRevision> revisions = new List<MercurialRevision> ();
+			
+			string changeset = string.Empty;
+			string date = string.Empty; // FIXME
+			string logText = RunMercurialRepoCommand (localFile, "commands.log(repo.ui,repo,'{0}',date=None,user=None{1})", localFile, ",rev=None");
+			string user = string.Empty;
+			string message = string.Empty;
+			
+			foreach (string line in logText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
+				Console.WriteLine ("Parsing {0}", line);
+				if (line.TrimStart ().StartsWith (localizedChangeset, StringComparison.Ordinal)) {
+					changeset = line.Substring (localizedChangeset.Length).TrimStart ();
+					changeset = changeset.Substring (0, changeset.IndexOf (':'));
+				} else if (line.StartsWith (localizedDate, StringComparison.Ordinal)) {
+					date = line.Substring (localizedDate.Length).TrimStart ();
+				} else if (line.StartsWith (localizedUser, StringComparison.Ordinal)) {
+					user = line.Substring (localizedUser.Length).TrimStart ();
+				} else if (line.StartsWith (localizedMessage, StringComparison.Ordinal)) {
+					message = line.Substring (localizedMessage.Length);
+					revisions.Add (new MercurialRevision (repo, changeset, DateTime.MinValue/* FIXME */, user, message, new RevisionPath[]{}));
+				}
+			}
+			
+			return revisions.ToArray ();
+			
+			
+			
+			/*
 			localFile = NormalizePath (Path.GetFullPath (localFile));
 			List<MercurialRevision> history = new List<MercurialRevision> ();
 			string basePath = MercurialRepository.GetLocalBasePath (localFile);
@@ -407,6 +442,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			});
 				
 			return history.ToArray ();
+			*/
 		}// GetHistory
 
 		public override System.Collections.Generic.Dictionary<string, BranchType> GetKnownBranches (string path)
