@@ -211,7 +211,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			StringBuilder command = new StringBuilder ();
 			string output;
 			
-			command.AppendFormat ("repo = hg.repository(ui.ui(),'{0}')\n", repoPath);
+			command.AppendFormat ("repo = hg.repository(ui.ui(),'{0}')\n", GetLocalBasePath (repoPath));
 			command.Append ("repo.ui.pushbuffer()\n");
 			command.AppendFormat (baseCommand, args);
 			command.Append ("\noutput=repo.ui.popbuffer()\n");
@@ -220,16 +220,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return output;
 		}
 
+		// TODO: Recurse not supported
 		public override void Add (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("tree = workingtree.WorkingTree.open_containing(path=ur\"{0}\")[0]\n", localPath);
-			command.AppendFormat (null, "tree.smart_add(file_list=[ur\"{0}\"], recurse={1})\n", localPath, recurse? "True": "False");
-			
-			lock (lockme) {
-				run (null, command.ToString ());
-			}
+			RunMercurialRepoCommand (localPath, "commands.add (repo.ui, repo, '{0}')", localPath);
 		}
 
 		public override void Branch (string branchLocation, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
