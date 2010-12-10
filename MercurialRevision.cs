@@ -33,7 +33,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 				set{ base.ChangedFiles = value; }
 			}
 			
-			public static readonly string HEAD = "-1";
+			public static readonly string HEAD = "tip";
 			public static readonly string FIRST = "1";
 			public static readonly string NONE = "NONE";
 			

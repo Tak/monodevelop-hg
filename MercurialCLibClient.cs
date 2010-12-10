@@ -310,19 +310,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 			foreach (string file in files) {
 				string fullPath = Path.Combine (basePath, file);
-				StringBuilder command = new StringBuilder ();
-				command.AppendFormat ("tree,relpath = workingtree.WorkingTree.open_containing(path=ur\"{0}\")\n", fullPath);
-				command.AppendFormat ("outfile = StringIO.StringIO()\n");
-				command.AppendFormat ("tree.lock_read()\ntry:\n");
-				command.AppendFormat ("  mydiff = bzrlib.diff.DiffTree(old_tree=tree.basis_tree(), new_tree=tree, to_file=outfile)\n");
-				command.AppendFormat ("  mydiff.show_diff(specific_files=[relpath])\n");
-				command.AppendFormat ("  output = outfile.getvalue()\n");
-				command.AppendFormat ("finally:\n  tree.unlock()\n  outfile.close()\n");
-			
-				lock (lockme) {
-					string output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]);
-					results.Add (new DiffInfo (basePath, file, output.Replace ("\r\n", Environment.NewLine)));
-				}
+				results.Add (new DiffInfo (basePath, file, RunMercurialRepoCommand (fullPath, "commands.diff(repo.ui,repo,'{0}')", fullPath)
+				                                           .Replace ("\r\n", Environment.NewLine)));
 			}
 			
 			return results.ToArray ();
@@ -330,6 +319,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override DiffInfo[] Diff (string path, MercurialRevision fromRevision, MercurialRevision toRevision)
 		{
+			// Need history for this
+			path = NormalizePath (Path.GetFullPath (path));
+			return new[]{ new DiffInfo (GetLocalBasePath (path), path, 
+			                  RunMercurialRepoCommand (path, "commands.diff(repo.ui,repo,'{2}',rev='{0},{1}')", fromRevision.Rev, toRevision.Rev, path))
+			};
+			
+			/*
 			List<DiffInfo> results = new List<DiffInfo> ();
 			path = NormalizePath (Path.GetFullPath (path));
 			StringBuilder command = new StringBuilder ();
@@ -357,11 +353,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			return results.ToArray ();
+			*/
 		}
 
 		static Regex revisionRegex = new Regex (@"^\s*(?<revision>[\d\.]+): (?<committer>.*) (?<date>\d{4}-\d{2}-\d{2}) (?<message>.*)", RegexOptions.Compiled);
 		public override MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since)
 		{
+			return new[]{ new MercurialRevision (repo, MercurialRevision.HEAD) };
 			localFile = NormalizePath (Path.GetFullPath (localFile));
 			List<MercurialRevision> history = new List<MercurialRevision> ();
 			string basePath = MercurialRepository.GetLocalBasePath (localFile);
@@ -454,21 +452,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override string GetTextAtRevision (string path, MercurialRevision rev)
 		{
-			StringBuilder command = new StringBuilder ();
-			IntPtr text = IntPtr.Zero;
-			command.AppendFormat ("revspec = revisionspec.RevisionSpec.from_string(spec=\"{0}\")\n", rev.Rev);
-			command.AppendFormat ("b,relpath = branch.Branch.open_containing(url=ur\"{0}\")\n", NormalizePath (path));
-			command.AppendFormat ("rev_tree = b.repository.revision_tree(revision_id=revspec.in_history(branch=b).rev_id)\n");
-			command.AppendFormat ("rev_tree.lock_read()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat ("  diff = rev_tree.get_file_text(file_id=rev_tree.path2id(path=relpath))\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  rev_tree.unlock()\n");
-			
-			lock (lockme) {
-				text = run (new List<string>{"diff"}, command.ToString ())[0];
-				return StringFromPython (text); 
-			}// lock
+			path = NormalizePath (Path.GetFullPath (path));
+			string tempfile = Path.GetTempFileName ();
+			string revtext = RunMercurialRepoCommand (path, "commands.cat(repo.ui,repo,'{0}',rev='{1}',output='{2}')", path, rev.Rev, tempfile);
+			return File.ReadAllText (tempfile);
 		}// GetTextAtRevision
 
 		public override bool IsVersioned (string path)

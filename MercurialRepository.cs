@@ -100,8 +100,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		private string localBasePath;
 
 		/// <remarks>
-		/// Since bzr doesn't store a text-base like svn,
-		/// we're catting the baseline text to a temp file
+		/// Since hg doesn't store a text-base like svn,
+		/// we're catting the baseline text
 		/// </remarks>
 		public override string GetBaseText (FilePath localFilePath)
 		{
