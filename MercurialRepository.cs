@@ -420,7 +420,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public virtual void Uncommit (FilePath localPath, IProgressMonitor monitor)
 		{
-			Mercurial.Uncommit (localPath.FullPath, monitor);
+			if (IsModified (localPath)) {
+				MonoDevelop.Ide.DispatchService.GuiSyncDispatch(delegate{ 
+					new MessageDialog (null, DialogFlags.Modal, MessageType.Warning, ButtonsType.Close,
+					                   "There are uncommitted changed in the working copy. Aborting...").ShowAll ();
+				});
+			} else {
+				Mercurial.Uncommit (localPath.FullPath, monitor);
+			}
 		}// Uncommit
 		
 		public override Annotation[] GetAnnotations (FilePath localPath)

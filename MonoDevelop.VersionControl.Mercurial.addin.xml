@@ -90,7 +90,7 @@
 			_label = "_Unbind"
 			description = "Convert the current checkout into a regular branch." />
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Uncommit"
-			_label = "_Uncommit"
+			_label = "_Backout"
 			icon = "vc-revert-command" 
 			description = "Remove the last committed revision." />
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Export"

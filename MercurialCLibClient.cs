@@ -662,13 +662,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 				itemStatus = (ItemStatus)tokens[0][0];
 				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
 				statuses.Add (new LocalStatus (string.Empty, Path.GetFullPath (NormalizePath (tokens[1])), itemStatus));
-				if (itemStatus != ItemStatus.Ignored && itemStatus != ItemStatus.Unversioned) {
+				if (itemStatus != ItemStatus.Ignored && itemStatus != ItemStatus.Unversioned && itemStatus != ItemStatus.Unchanged) {
 					modified = true;
 				}
 			}
-			if (modified) {
-				statuses.Insert (0, new LocalStatus (string.Empty, GetLocalBasePath (path), ItemStatus.Modified));
-			}
+			statuses.Insert (0, new LocalStatus (string.Empty, GetLocalBasePath (path), modified? ItemStatus.Modified: ItemStatus.Unchanged));
 			
 			return statuses;
 		}
@@ -773,11 +771,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override void Uncommit (string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			run (null, "tree = workingtree.WorkingTree.open_containing(path=ur'{0}')[0]\nb = tree.branch\n", NormalizePath (localPath));
-			monitor.Log.WriteLine ("Opened {0}", localPath);
-			
-			run (null, "uncommit.uncommit(branch=b, tree=tree)\n");
-			monitor.Log.WriteLine ("Uncommit complete.");
+			localPath = NormalizePath (Path.GetFullPath (localPath));
+			RunMercurialRepoCommand (localPath, "commands.backout(repo.ui,repo,'tip',message='Backout',logfile=None)");
 		}// Uncommit
 		
 		public override Annotation[] GetAnnotations (string localPath)
