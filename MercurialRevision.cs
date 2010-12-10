@@ -34,7 +34,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			public static readonly string HEAD = "tip";
-			public static readonly string FIRST = "1";
+			public static readonly string FIRST = "0";
 			public static readonly string NONE = "NONE";
 			
 			public MercurialRevision (Repository repo, string rev): base (repo) 
