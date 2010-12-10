@@ -236,18 +236,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
 			string output = string.Empty;
 			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("mycmd = builtins.cmd_branch()\n");
-			command.AppendFormat ("mycmd.outf = StringIO.StringIO()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat (string.Format ("  mycmd.run(from_location=ur'{0}',to_location=ur'{1}')\n", branchLocation, localPath));
-			command.AppendFormat ("  output = mycmd.outf.getvalue()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  mycmd.outf.close()\n");
-			
+			command.Append ("myui = ui.ui()\n");
+			command.Append ("myui.pushbuffer()\n");
+			command.AppendFormat ("commands.clone(myui,'{0}','{1}')\n", branchLocation, localPath);
+			command.Append ("output=myui.popbuffer()\n");
 			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
 			
 			monitor.Log.WriteLine (output);
-			monitor.Log.WriteLine ("Branched to {0}", localPath);
+			monitor.Log.WriteLine ("Cloned to {0}", localPath);
 		}
 
 		public override void Checkout (string url, string targetLocalPath, MercurialRevision rev, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
@@ -676,12 +672,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			StringBuilder command = new StringBuilder ();
 			List<LocalStatus> statuses = new List<LocalStatus> ();
-			LocalStatus mystatus = null;
 			string rev = string.Empty;
 			bool modified = false;
-			IntPtr  tuple = IntPtr.Zero,
-					listlen = IntPtr.Zero;
 			string statusText = string.Empty;
+			ItemStatus itemStatus;
 					
 			path = NormalizePath (Path.GetFullPath (path).Replace ("{", "{{").Replace ("}", "}}"));// escape for string.format
 			command.AppendFormat ("repo = hg.repository(ui.ui(),'{0}')\n", path);
@@ -700,76 +694,16 @@ namespace MonoDevelop.VersionControl.Mercurial
 			
 			foreach (string line in statusText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
 				string[] tokens = line.Split (new[]{' '}, 2);
+				itemStatus = (ItemStatus)tokens[0][0];
 				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
-				statuses.Add (new LocalStatus (string.Empty, Path.GetFullPath (NormalizePath (tokens[1])), (ItemStatus)tokens[0][0]));
+				statuses.Add (new LocalStatus (string.Empty, Path.GetFullPath (NormalizePath (tokens[1])), itemStatus));
+				if (itemStatus != ItemStatus.Ignored && itemStatus != ItemStatus.Unversioned) {
+					modified = true;
+				}
 			}
-			if (0 != statuses.Count) {
+			if (modified) {
 				statuses.Insert (0, new LocalStatus (string.Empty, GetLocalBasePath (path), ItemStatus.Modified));
 			}
-			
-			/*
-			lock (lockme) {
-				run (new List<string>{"status"}, command.ToString ());
-				
-				string[] types = new string[]{ "added", "removed", "modified", "unversioned" };
-				string filename;
-				
-				foreach (string modtype in types) {
-					try {
-						listlen = run (new List<string>{"mylen"}, 
-						        "mylist = status.{0}\nmylen = len(mylist)\n", modtype)[0];
-						int listlength = PyInt_AsLong (listlen);
-						for (int i=0; i<listlength; ++i) {
-							tuple = run (new List<string>{"astatus"}, "astatus = tree.abspath(filename=mylist[{0}][0])", i)[0];
-							filename = StringFromPython (tuple);
-							if (PropertyService.IsWindows){ filename = filename.Replace ("/", "\\"); }
-							LocalStatus status = new LocalStatus (rev, filename, longStatuses[modtype]);
-							if (path.Equals (filename, StringComparison.Ordinal)) {
-								mystatus = status;
-							} 
-							if (filename.StartsWith (path, StringComparison.Ordinal)) {
-								modified = (!"unversioned".Equals (modtype, StringComparison.Ordinal));
-								statuses.Add (status);
-							}
-						}// get each file status
-					} finally {
-						Py_DecRef (listlen);
-					}
-				}
-				
-				command = new StringBuilder ();
-				command.Append ("myconflicts = \"\"\n");
-				command.Append ("for conflict in totree.conflicts():\n");
-				command.Append ("  myconflicts = myconflicts + totree.abspath (filename=conflict.path) + \"|\"\n");
-				
-				string conflicts = StringFromPython (run (new List<string>{"myconflicts"}, command.ToString ())[0]);
-				
-				foreach (string conflict in conflicts.Split ('|')) {
-					if (!string.IsNullOrEmpty (conflict)) {
-						bool matched = false;
-						if (path.Equals (conflict, StringComparison.Ordinal)) {
-							if (null == mystatus){ statuses.Insert (0, mystatus = new LocalStatus (rev, path, ItemStatus.Conflicted)); }
-							else{ mystatus.Status = ItemStatus.Conflicted; }
-						} else if (Path.GetFullPath (conflict).StartsWith (path, StringComparison.Ordinal)) {
-							foreach (LocalStatus status in statuses) {
-								if (conflict.EndsWith (status.Filename, StringComparison.Ordinal)) {
-									status.Status = ItemStatus.Conflicted;
-									matched = true;
-									break;
-								}
-							}// Check existing statuses
-							if (!matched) {
-								statuses.Add (new LocalStatus (rev, conflict, ItemStatus.Conflicted));
-							}// Add new status if not found
-						}// Child file is conflicted
-					}// If conflict is valid path
-				}// Check each conflict
-			}// lock
-			
-			if (null == mystatus) {
-				statuses.Insert (0, new LocalStatus ("-1", path, modified? ItemStatus.Modified: ItemStatus.Unchanged));
-			}// path isn't in modified list
-			*/
 			
 			return statuses;
 		}

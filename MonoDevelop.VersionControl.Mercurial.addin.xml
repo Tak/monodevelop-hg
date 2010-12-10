@@ -71,7 +71,7 @@
 			description = "Perform a three-way merge." />
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Branch"
 			defaultHandler = "MonoDevelop.VersionControl.Mercurial.BranchCommand" 
-			_label = "_Branch"
+			_label = "_Clone"
 			icon = "vc-update" 
 			description = "Create a new copy of a branch." />
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Init"
