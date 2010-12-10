@@ -481,11 +481,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return File.ReadAllText (tempfile);
 		}// GetTextAtRevision
 
-		public override bool IsVersioned (string path)
-		{
-			return base.IsVersioned(path);
-		}
-
 		public override System.Collections.Generic.IList<string> List (string path, bool recurse, ListKind kind)
 		{
 			List<string> found = new List<string> ();
