@@ -241,6 +241,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Checkout (string url, string targetLocalPath, MercurialRevision rev, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
+			// TODO: Support this?
+			return;
+			/*
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
 			string pyrev = "None";
 			string realUrl = url;
@@ -265,6 +268,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 			lock (lockme){ run (null, command.ToString ()); }
 			monitor.Log.WriteLine ("Checkout to {0} completed", targetLocalPath);
+			*/
 		}
 
 		public override void Commit (ChangeSet changeSet, MonoDevelop.Core.IProgressMonitor monitor)
@@ -447,30 +451,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override System.Collections.Generic.Dictionary<string, BranchType> GetKnownBranches (string path)
 		{
-			Dictionary<string, BranchType> branchGetters = new Dictionary<string, BranchType> {
-				{ "get_parent", BranchType.Parent },
-				{ "get_submit_branch", BranchType.Submit },
-				{ "get_public_branch", BranchType.Public },
-				{ "get_push_location", BranchType.Push }
-			};
-			Dictionary<string, BranchType> branches = new Dictionary<string, BranchType> ();
-			
-			lock (lockme) {
-				run (null, "b = branch.Branch.open_containing(url=ur\"{0}\")[0]\n", NormalizePath (Path.GetFullPath (path)));
-				IntPtr branch = IntPtr.Zero;
-				string mybranch;
-				
-				foreach (string getter in branchGetters.Keys) {
-					try {
-						branch = run (new List<string>{"mybranch"}, "mybranch = b.{0}()", getter)[0];
-						if (!string.IsNullOrEmpty (mybranch = StringFromPython (branch))) {
-							branches[mybranch] = branchGetters[getter];
-						}
-					} catch { 
-						// Don't care, just means branch doesn't exist
-					}
-				}// invoke each getter
-			}// lock
+			// TODO: Test more thoroughly with remote repos
+			var branches = new System.Collections.Generic.Dictionary<string,BranchType> ();
+			path = NormalizePath (Path.GetFullPath (path));
+			foreach (string remote in RunMercurialRepoCommand (path, "commands.paths(repo.ui, repo)")
+			         .Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
+				branches.Add (remote, BranchType.Public);
+			}
 			
 			return branches;
 		}// GetKnownBranches
@@ -490,7 +477,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			path = NormalizePath (Path.GetFullPath (path));
 			string tempfile = Path.GetTempFileName ();
-			string revtext = RunMercurialRepoCommand (path, "commands.cat(repo.ui,repo,'{0}',rev='{1}',output='{2}')", path, rev.Rev, tempfile);
+			RunMercurialRepoCommand (path, "commands.cat(repo.ui,repo,'{0}',rev='{1}',output='{2}')", path, rev.Rev, tempfile);
 			return File.ReadAllText (tempfile);
 		}// GetTextAtRevision
 
