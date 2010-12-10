@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monodevelop-hg", "monodevelop-hg.csproj", "{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = monodevelop-hg.csproj
+		Policies = $0
+		$0.StandardHeader = $1
+		$1.inheritsSet = GPLv2License
+		name = monodevelop-hg
+	EndGlobalSection
+EndGlobal
