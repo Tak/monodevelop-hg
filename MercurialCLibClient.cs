@@ -278,22 +278,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			foreach (ChangeSetItem item in changeSet.Items) {
-				files.Add ((((string)item.LocalPath.FullPath).Length <= basePath.Length)? string.Empty: ((string)item.LocalPath.FullPath).Substring (basePath.Length));
+				files.Add ((string)item.LocalPath.FullPath);
 			}
 			
-			if (0 == files.Count || (1 == files.Count && string.Empty.Equals (files[0], StringComparison.Ordinal))) {
-				pyfiles = "None";
-			} else {
-				pyfiles = string.Format ("[ur\"{0}\"]", string.Join ("\",\"", files.ToArray ()));
+			if (!(0 == files.Count || (1 == files.Count && string.Empty.Equals (files[0], StringComparison.Ordinal)))) {
+				pyfiles = string.Format ("'{0}',", string.Join ("','", files.ToArray ()));
 			}
 			
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("tree = workingtree.WorkingTree.open_containing(path=ur\"{0}\")[0]\n", NormalizePath (basePath));
-			command.AppendFormat ("c = commit.Commit()\nc.commit(message=ur\"{0}\",specific_files={1},working_tree=tree)\n", escapedComment, pyfiles);
-
-			lock (lockme) {
-				run (null, command.ToString ());
-			}
+			RunMercurialRepoCommand (basePath, "commands.commit(repo.ui,repo,{1}message='{0}')", escapedComment, pyfiles);
 		}
 		
 		public override DiffInfo[] Diff (string basePath, string[] files)
@@ -848,14 +840,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override bool IsMergePending (string localPath)
 		{
-			lock (lockme)
-			{ 
-				// HACK: However, this is the way bzrlib does it.
-				string pending = StringFromPython (run (new List<string>{"pending"},
-				                      "pending = str(len(workingtree.WorkingTree.open_containing(path=ur'{0}')[0].get_parent_ids()))",
-				                      NormalizePath (localPath))[0]); 
-				return !pending.Equals ("1", StringComparison.Ordinal);
-			}
+			string parentsSummary = RunMercurialRepoCommand (localPath, "commands.parents(repo.ui,repo)");
+			int parentsCount = 0;
+			
+			parentsCount = parentsSummary.Split (new[]{'\r','\n'},StringSplitOptions.RemoveEmptyEntries)
+				.Where (s=>s.Trim().StartsWith(GettextCatalog.GetString("changeset")))
+				.Count ();
+				
+			return 1 < parentsCount;
 		}// IsMergePending
 		
 		public override bool CanRebase ()
