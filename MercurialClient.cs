@@ -62,10 +62,12 @@ namespace MonoDevelop.VersionControl.Mercurial
 					string[] tokens = v.Split ('.');
 					int major = int.Parse (tokens[0]),
 					    minor = int.Parse (tokens[1]);
-					return (3 <= major || (2 == major && 1 <= minor));
+					return (1 <= major && 6 <= minor);
 				}
 			}
-			catch { }
+			catch (Exception e) {
+				LoggingService.LogWarning ("Error: Mercurial not installed", e);
+			}
 
 			return false;
 		}// CheckInstalled
@@ -74,8 +76,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			try {
 				IList<LocalStatus> statuses = Status (path, null);
-				// System.Console.WriteLine ("IsVersioned: Got back {0} statuses for {1}", statuses.Count, path);
-				// if (0 < statuses.Count){ System.Console.WriteLine ("{0} {1}", Path.GetFullPath (path), statuses[0].Filename); }
+				System.Console.WriteLine ("IsVersioned: Got back {0} statuses for {1}", statuses.Count, path);
+				if (0 < statuses.Count){ System.Console.WriteLine ("{0} {1}", Path.GetFullPath (path), statuses[0].Filename); }
 				if (1 != statuses.Count || 
 				!Path.GetFullPath (path).EndsWith (statuses[0].Filename)) {
 					return true;
@@ -83,7 +85,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 				// System.Console.WriteLine ("Status: {0}", statuses[0].Status);
 				return statuses[0].Status != ItemStatus.Unversioned;
-			} catch (MercurialClientException) {}
+			} catch (MercurialClientException mce) {
+				LoggingService.LogWarning (string.Format ("Error checking whether {0} is versioned", path), mce);
+			}
 			
 			return false;
 		}// IsVersioned
@@ -152,7 +156,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public static string GetLocalBasePath (string localPath) {
 			if (null == localPath){ return string.Empty; }
-			if (Directory.Exists (Path.Combine (localPath, ".bzr"))){ return localPath; }
+			if (Directory.Exists (Path.Combine (localPath, ".hg"))){ return localPath; }
 
 			return GetLocalBasePath (Path.GetDirectoryName (localPath));
 		}// GetLocalBasePath
@@ -210,14 +214,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 	/// </summary>
 	public enum ItemStatus
 	{
-		Unversioned,
-		Unchanged = ' ',
-		Added = 'N',
-		Conflicted = 'C',
-		Deleted = 'D',
+		Unversioned = '?',
+		Unchanged = 'C',
+		Added = 'A',
+		Conflicted = 'Z', // FIXME
+		Deleted = 'R',
 		Ignored = 'I',
 		Modified = 'M',
-		Replaced = 'R'
+		Replaced = 'Y', // FIXME
 	}// ItemStatus
 
 	public enum PropertyStatus
