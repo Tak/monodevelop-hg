@@ -179,32 +179,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 					"from mercurial import util",
 					"from mercurial import commands",
 				};
-				/*
-					"if('win32'==sys.platform): sys.path.append('C:/Program Files/Mercurial/lib/library.zip')",
-					"import bzrlib",
-					"from bzrlib import plugin",
-					"bzrlib.plugin.load_plugins()",
-					"from bzrlib import api",
-					"from bzrlib import branch",
-					"from bzrlib import workingtree",
-					"from bzrlib import revisionspec",
-					"from bzrlib import commit",
-					"from bzrlib import diff",
-					"from bzrlib import merge",
-					"from bzrlib import bzrdir",
-					"from bzrlib import log",
-					"from bzrlib import revision",
-					"from bzrlib import conflicts",
-					"from bzrlib import config",
-					"from bzrlib import transport",
-					"from bzrlib import ignores",
-					"from bzrlib import uncommit",
-					"from bzrlib import annotate",
-					"from bzrlib import builtins",
-					"from bzrlib import commands",
-					"from bzrlib import errors",
-					"from bzrlib import foreign"
-				*/
 				
 				foreach (string import in imports) {
 					run (null, import);
@@ -216,6 +190,34 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public MercurialCLibClient()
 		{
+		}
+		
+		string RunMercurialCommand (string baseCommand, params object[] args)
+		{
+			StringBuilder command = new StringBuilder ();
+			string output;
+			
+			command.Append ("myui = ui.ui()\n");
+			command.Append ("myui.pushbuffer()\n");
+			command.AppendFormat (baseCommand, args);
+			command.Append ("\noutput=myui.popbuffer()\n");
+			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
+			
+			return output;
+		}
+
+		string RunMercurialRepoCommand (string repoPath, string baseCommand, params object[] args)
+		{
+			StringBuilder command = new StringBuilder ();
+			string output;
+			
+			command.AppendFormat ("repo = hg.repository(ui.ui(),'{0}')\n", repoPath);
+			command.Append ("repo.ui.pushbuffer()\n");
+			command.AppendFormat (baseCommand, args);
+			command.Append ("\noutput=repo.ui.popbuffer()\n");
+			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
+			
+			return output;
 		}
 
 		public override void Add (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
@@ -234,13 +236,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			string output = string.Empty;
-			StringBuilder command = new StringBuilder ();
-			command.Append ("myui = ui.ui()\n");
-			command.Append ("myui.pushbuffer()\n");
-			command.AppendFormat ("commands.clone(myui,'{0}','{1}')\n", branchLocation, localPath);
-			command.Append ("output=myui.popbuffer()\n");
-			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
+			
+			string output = RunMercurialCommand ("commands.clone(myui,'{0}','{1}')", branchLocation, localPath);
 			
 			monitor.Log.WriteLine (output);
 			monitor.Log.WriteLine ("Cloned to {0}", localPath);
@@ -670,26 +667,19 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override System.Collections.Generic.IList<LocalStatus> Status (string path, MercurialRevision revision)
 		{
-			StringBuilder command = new StringBuilder ();
 			List<LocalStatus> statuses = new List<LocalStatus> ();
 			string rev = string.Empty;
 			bool modified = false;
-			string statusText = string.Empty;
 			ItemStatus itemStatus;
+			
 					
 			path = NormalizePath (Path.GetFullPath (path).Replace ("{", "{{").Replace ("}", "}}"));// escape for string.format
-			command.AppendFormat ("repo = hg.repository(ui.ui(),'{0}')\n", path);
 			
 			if (null != revision && MercurialRevision.HEAD != revision.Rev && MercurialRevision.NONE != revision.Rev) {
 				rev = string.Format (",change={0}", revision.Rev);
 			}
 			
-			command.Append ("repo.ui.pushbuffer()\n");
-			command.AppendFormat ("commands.status(repo.ui,repo,'{0}'{1})\n", path, rev);
-			command.Append ("status=repo.ui.popbuffer()\n");
-			lock (lockme) {
-				statusText = StringFromPython (run (new List<string>{"status"}, command.ToString ())[0]);
-			}
+			string statusText = RunMercurialRepoCommand (path, "commands.status(repo.ui,repo,'{0}'{1})\n", path, rev);
 			Console.WriteLine (statusText);
 			
 			foreach (string line in statusText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
