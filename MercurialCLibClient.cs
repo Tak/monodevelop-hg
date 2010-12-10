@@ -215,6 +215,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			command.Append ("repo.ui.pushbuffer()\n");
 			command.AppendFormat (baseCommand, args);
 			command.Append ("\noutput=repo.ui.popbuffer()\n");
+			Console.WriteLine ("Running: {0}", command.ToString());
 			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
 			
 			return output;
@@ -641,23 +642,15 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Revert (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor, MercurialRevision toRevision)
 		{
+			string rev = string.Empty;
 			localPath = NormalizePath (Path.GetFullPath (localPath));
-			
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("tree = workingtree.WorkingTree.open_containing(path=ur\"{0}\")[0]\n", localPath);
-			if (null == toRevision || MercurialRevision.HEAD == toRevision.Rev || MercurialRevision.NONE == toRevision.Rev) {
-				command.AppendFormat ("rev = None\n");
+			if (null != toRevision && MercurialRevision.HEAD != toRevision.Rev && MercurialRevision.NONE != toRevision.Rev) {
+				rev = string.Format (",rev='{0}',date=None", toRevision.Rev);
 			} else {
-				command.AppendFormat ("revspec = revisionspec.RevisionSpec.from_string(spec=\"{0}\")\n", toRevision.Rev);
-				command.AppendFormat ("b,relpath = branch.Branch.open_containing(url=ur\"{0}\")\n", localPath);
-				command.AppendFormat ("rev = b.repository.revision_tree(revision_id=revspec.in_history(branch=b).rev_id)\n");
+				rev = ",rev='tip',date=None";
 			}
-			command.AppendFormat ("tree.lock_tree_write()\n");
-			command.AppendFormat ("try:\n  tree.revert(filenames=[tree.relpath(ur\"{0}\")], old_tree=rev)\n", localPath);
-			command.AppendFormat ("finally:\n  tree.unlock()\n");
-			lock (lockme) {
-				run (null, command.ToString ());
-			}
+			
+			RunMercurialRepoCommand (localPath, "commands.revert(repo.ui,repo,'{0}'{1})", localPath, rev);
 		}
 
 		public override System.Collections.Generic.IList<LocalStatus> Status (string path, MercurialRevision revision)
@@ -674,7 +667,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 				rev = string.Format (",change={0}", revision.Rev);
 			}
 			
-			string statusText = RunMercurialRepoCommand (path, "commands.status(repo.ui,repo,'{0}'{1})\n", path, rev);
+			string statusText = RunMercurialRepoCommand (path, "commands.status(repo.ui,repo,'{0}',all=True{1})\n", path, rev);
 			Console.WriteLine (statusText);
 			
 			foreach (string line in statusText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
