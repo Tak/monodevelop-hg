@@ -37,8 +37,10 @@
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Resolve" insertafter="MonoDevelop.VersionControl.Commands.Revert" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" insertafter="MonoDevelop.VersionControl.Commands.Update" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" />
+			<!--
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Unbind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" />
+			-->
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Uncommit" insertafter="MonoDevelop.VersionControl.Commands.Commit" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Export" insertafter="MonoDevelop.VersionControl.Commands.Log" />
 		</Condition>
