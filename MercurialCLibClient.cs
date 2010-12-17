@@ -647,6 +647,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override void StoreCredentials (string url)
 		{
+			/*
 			try {
 				Match match = UrlRegex.Match (url);
 				if ((!url.StartsWith ("lp:", StringComparison.Ordinal)) && 
@@ -672,6 +673,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 				
 				System.Console.WriteLine("Stored credentials to {0}", Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".bazaar"), "authentication.conf") );
 			} catch { } // Don't care
+			*/
 		}// StoreCredentials
 		
 		public override void Init (string path)
