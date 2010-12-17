@@ -61,7 +61,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		Bind,
 		Unbind,
 		Uncommit,
-		Export
+		Export,
+		Push
 	}
 
 	/// <summary>
@@ -399,7 +400,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		}// OnUncommit
 		
 		[CommandHandler (Commands.Publish)]
-		protected void OnBzrPublish() 
+		[CommandHandler (MercurialCommands.Push)]
+		protected void OnMercurialPublish() 
 		{
 			VersionControlItem vcitem = GetItems ()[0];
 			MercurialRepository repo = ((MercurialRepository)vcitem.Repository);
@@ -441,7 +443,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 		}// OnPublish
 		
 		[CommandUpdateHandler (Commands.Publish)]
-		protected void UpdateBzrPublish(CommandInfo item) {
+		[CommandUpdateHandler (MercurialCommands.Push)]
+		protected void UpdateMercurialPublish(CommandInfo item) {
+			System.Console.WriteLine ("Updating mercurial publish");
 			CanPull (item);
 		}// UpdatePublish
 		

@@ -6,7 +6,7 @@
        url       = ""
        description = "Mercurial support for the Version Control Addin"
        category    = "Version Control"
-       version   = "2.5.1">
+       version   = "2.5.0">
  
 	<Runtime>
 		<Import assembly="MonoDevelop.VersionControl.Mercurial.dll"/>
@@ -36,7 +36,8 @@
 		<Condition id="ItemType" value="Project|WorkspaceItem">
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Resolve" insertafter="MonoDevelop.VersionControl.Commands.Revert" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" insertafter="MonoDevelop.VersionControl.Commands.Update" />
-			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" />
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" />
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" />
 			<!--
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Unbind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" />
@@ -68,6 +69,10 @@
 			_label = "Pull"
 			icon = "vc-update" 
 			description = "Turn this branch into a mirror of another branch." />
+		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" 
+			_label = "Push"
+			icon = "vc-commit" 
+			description = "Push changesets from the local repository to the specified destination." />
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" 
 			_label = "Merge"
 			description = "Perform a three-way merge." />
