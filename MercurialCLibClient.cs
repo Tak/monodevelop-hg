@@ -683,11 +683,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override void Ignore (string path)
 		{
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("tree,relpath = workingtree.WorkingTree.open_containing(path=ur'{0}')\n", NormalizePath (path));
-			command.AppendFormat ("ignores.tree_ignores_add_patterns(tree=tree, name_pattern_list=[relpath])\n");
-			
-			run (null, command.ToString ());
+			string hgignore = Path.Combine (NormalizePath (Path.GetFullPath (path)), ".hgignore");
+			File.AppendAllText (hgignore, path);
 		}// Ignore
 		
 		public override bool IsBound (string path)
