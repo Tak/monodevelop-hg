@@ -792,23 +792,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override void Export (string localPath, string exportPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			localPath = NormalizePath (localPath);
+			localPath = NormalizePath (Path.GetFullPath (localPath));
 			exportPath = NormalizePath (exportPath);
 			if (!IsValidExportPath (exportPath)){ throw new MercurialClientException (string.Format ("Invalid export path: {0}", exportPath)); }
-			
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			string output = string.Empty;
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("mycmd = builtins.cmd_export()\n");
-			command.AppendFormat ("mycmd.outf = StringIO.StringIO()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat (string.Format ("  mycmd.run(dest=ur'{0}',branch_or_subdir=ur'{1}')\n", exportPath, localPath));
-			command.AppendFormat ("  output = mycmd.outf.getvalue()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  mycmd.outf.close()\n");
-			
-			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
-			
+			string output = RunMercurialRepoCommand (localPath, "commands.archive(repo.ui,repo,'{0}',prefix='')", exportPath);
 			monitor.Log.WriteLine (output);
 			monitor.Log.WriteLine ("Exported to {0}", exportPath);
 		}// Export
@@ -828,21 +816,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override bool CanRebase ()
 		{
 			return true;
-			/*
-			string haveRebase = null;
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("haveRebase = 'false'\n");
-			command.AppendFormat ("for name, plugin in bzrlib.plugin.plugins().items():\n");
-			command.AppendFormat ("  if(name == rebase):\n");
-			command.AppendFormat ("    haveRebase = 'true'\n");
-			command.AppendFormat ("    break\n");
-			
-			lock (lockme) {
-				haveRebase = StringFromPython (run (new List<string>(){"haveRebase"}, command.ToString ())[0]); 
-			}
-			
-			return "true".Equals (haveRebase, StringComparison.Ordinal);
-			*/
 		}// CanRebase
 		
 		public override void Rebase (string mergeLocation, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
