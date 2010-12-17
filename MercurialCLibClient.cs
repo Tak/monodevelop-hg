@@ -484,9 +484,12 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return File.ReadAllText (tempfile);
 		}// GetTextAtRevision
 
+		// FIXME: Is this being used for anything?
 		public override System.Collections.Generic.IList<string> List (string path, bool recurse, ListKind kind)
 		{
 			List<string> found = new List<string> ();
+			
+			/*
 			List<IntPtr> pylist = null;
 			string[] list = null;
 			string relpath = string.Empty;
@@ -515,6 +518,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 					found.Add (tokens[0]);
 				}// if valid match
 			}
+			*/
 			
 			return found;
 		}// List
