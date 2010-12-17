@@ -236,6 +236,20 @@ namespace MonoDevelop.VersionControl.Mercurial
 		void Pull (string pullLocation, string LocalPath, bool remember, bool overwrite, IProgressMonitor monitor);
 
 		/// <summary>
+		/// Performs a rebase
+		/// </summary>
+		/// <param name="pullLocation">
+		/// A <see cref="System.String"/>: The branch URI to pull
+		/// </param>
+		/// <param name="LocalPath">
+		/// A <see cref="System.String"/>: The local path to which to pull
+		/// </param>
+		/// <param name="monitor">
+		/// A <see cref="IProgressMonitor"/>: The progress monitor to be used
+		/// </param>
+		void Rebase (string pullLocation, string localPath, IProgressMonitor monitor);
+		
+		/// <summary>
 		/// Performs a commit
 		/// </summary>
 		void Commit (ChangeSet changeSet, IProgressMonitor monitor);

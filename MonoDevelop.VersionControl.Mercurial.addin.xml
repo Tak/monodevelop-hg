@@ -36,7 +36,8 @@
 		<Condition id="ItemType" value="Project|WorkspaceItem">
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Resolve" insertafter="MonoDevelop.VersionControl.Commands.Revert" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" insertafter="MonoDevelop.VersionControl.Commands.Update" />
-			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" />
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Rebase" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" />
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Rebase" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" />
 			<!--
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" />
@@ -69,6 +70,10 @@
 			_label = "Pull"
 			icon = "vc-update" 
 			description = "Turn this branch into a mirror of another branch." />
+		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Rebase" 
+			_label = "Rebase"
+			icon = "vc-update" 
+			description = "Rebase the working directory to the branch head." />
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" 
 			_label = "Push"
 			icon = "vc-commit" 

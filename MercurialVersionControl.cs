@@ -244,6 +244,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 			Client.Pull (pullLocation, localPath, remember, overwrite, monitor);
 		}// Pull
 		
+		public void Rebase (string pullLocation, string localPath, IProgressMonitor monitor) {
+			Client.Rebase (pullLocation, localPath, monitor);
+		}// Pull
+		
 		public void Commit (ChangeSet changeSet, IProgressMonitor monitor) {
 			if (Client.IsMergePending (changeSet.BaseLocalPath.FullPath)) {
 				int result = (int)ResponseType.Cancel;
