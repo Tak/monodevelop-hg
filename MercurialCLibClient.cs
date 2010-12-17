@@ -757,21 +757,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override Annotation[] GetAnnotations (string localPath)
 		{
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("tree,relpath = workingtree.WorkingTree.open_containing(path=ur'{0}')\n", NormalizePath (localPath));
-			command.AppendFormat ("try:\n");
-			command.AppendFormat ("  tree.lock_read()\n");
-			command.AppendFormat ("  id = tree.path2id(path=relpath)\n");
-			command.AppendFormat ("  f = StringIO.StringIO()\n");
-			command.AppendFormat ("  try:\n");
-			command.AppendFormat ("    annotate.annotate_file_tree(tree=tree, file_id=id, verbose=True, to_file=f)\n");
-			command.AppendFormat ("    annotations = f.getvalue()\n");
-			command.AppendFormat ("  finally:\n");
-			command.AppendFormat ("    f.close()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  tree.unlock()\n");
-			
-			string annotations = StringFromPython (run (new List<string>{"annotations"}, command.ToString ())[0]);
+			localPath = NormalizePath (Path.GetFullPath (localPath));
+			string annotations = RunMercurialRepoCommand (localPath, "commands.annotate(repo.ui,repo,'{0}',user=True,number=True,rev='tip')", localPath);
 			
 			string[] lines = annotations.Split (new string[]{"\r","\n"}, StringSplitOptions.RemoveEmptyEntries);
 			string[] tokens;
@@ -781,9 +768,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 			
 			foreach (string line in lines) {
 				tokens = line.Split (separators, StringSplitOptions.RemoveEmptyEntries);
-				if (2 < tokens.Length && !char.IsWhiteSpace (tokens[0][0]) && '|' != tokens[0][0]) {
-					previous = new Annotation (tokens[0], tokens[1],
-					  DateTime.ParseExact (tokens[2], "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture));
+				if (1 < tokens.Length && !char.IsWhiteSpace (tokens[0][0]) && '|' != tokens[0][0]) {
+					previous = new Annotation (tokens[1], tokens[0],
+					           DateTime.MinValue); // FIXME
+					  // DateTime.ParseExact (tokens[2], "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture));
 				}
 				result.Add (previous);
 			}
