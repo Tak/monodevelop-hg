@@ -488,7 +488,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		// FIXME: Is this being used for anything?
 		public override System.Collections.Generic.IList<string> List (string path, bool recurse, ListKind kind)
 		{
-			List<string> found = new List<string> ();
+			List<string> found = new List<string> (){ path };
 			
 			/*
 			List<IntPtr> pylist = null;
@@ -564,6 +564,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Pull (string pullLocation, string localPath, bool remember, bool overwrite, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
+			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
 			string output = RunMercurialRepoCommand (localPath, "commands.pull(repo.ui,repo,'{0}',update=True)", pullLocation);
 			monitor.Log.WriteLine (output);
 			monitor.Log.WriteLine ("Pulled to {0}", localPath);
@@ -573,19 +574,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			string output = string.Empty;
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("mycmd = builtins.cmd_push()\n");
-			command.AppendFormat ("mycmd.outf = StringIO.StringIO()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat (string.Format ("  mycmd.run(location=ur'{0}',remember={2},overwrite={3},directory=ur'{1}',strict=False)\n", 
-			                                   pushLocation, localPath, remember? "True": "False", overwrite? "True": "False"));
-			command.AppendFormat ("  output = mycmd.outf.getvalue()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  mycmd.outf.close()\n");
-			
-			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
-			
+			string output = RunMercurialRepoCommand (localPath, "commands.push(repo.ui,repo,'{0}',force={1})", pushLocation, overwrite? "True": "False");
 			monitor.Log.WriteLine (output);
 			monitor.Log.WriteLine ("Pushed to {0}", pushLocation);
 		}
