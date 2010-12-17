@@ -5,8 +5,8 @@
     <target-gtk-version>2.12</target-gtk-version>
   </configuration>
   <import>
-    <widget-library name="../../../../github-repo/monodevelop/main/build/bin/MonoDevelop.Ide.dll" />
     <widget-library name="../../../../github-repo/monodevelop/main/build/AddIns/VersionControl/MonoDevelop.VersionControl.dll" />
+    <widget-library name="../../../../github-repo/monodevelop/main/build/bin/MonoDevelop.Ide.dll" />
     <widget-library name="../bin/Debug/MonoDevelop.VersionControl.Mercurial.dll" internal="true" />
   </import>
   <widget class="Gtk.Dialog" id="MonoDevelop.VersionControl.Mercurial.Dialogs.BranchSelectionDialog" design-size="400 257">
@@ -92,6 +92,8 @@
                 <child>
                   <widget class="Gtk.CheckButton" id="omitCB">
                     <property name="MemberName">omitCB</property>
+                    <property name="Visible">False</property>
+                    <property name="Sensitive">False</property>
                     <property name="CanFocus">True</property>
                     <property name="Label" translatable="yes">O_mit History</property>
                     <property name="DrawIndicator">True</property>

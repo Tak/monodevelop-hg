@@ -216,23 +216,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		void Push (string pushLocation, string localPath, bool remember, bool overwrite, IProgressMonitor monitor);
 
 		/// <summary>
-		/// Performs a push
-		/// </summary>
-		/// <param name="pushLocation">
-		/// A <see cref="System.String"/>: The branch URI to which to push
-		/// </param>
-		/// <param name="localPath">
-		/// A <see cref="System.String"/>: The local path to push
-		/// </param>
-		/// <param name="remember">
-		/// A <see cref="System.Boolean"/>: Whether pushLocation should be remembered
-		/// </param>
-		/// <param name="monitor">
-		/// A <see cref="IProgressMonitor"/>: The progress monitor to be used
-		/// </param>
-		void DPush (string pushLocation, string localPath, bool remember, MonoDevelop.Core.IProgressMonitor monitor);
-		
-		/// <summary>
 		/// Performs a pull
 		/// </summary>
 		/// <param name="pullLocation">

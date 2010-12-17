@@ -105,7 +105,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since);
 		public abstract void Merge (string mergeLocation, string localPath, bool remember, bool overwrite, MercurialRevision start, MercurialRevision end, IProgressMonitor monitor);
 		public abstract void Push (string pushLocation, string localPath, bool remember, bool overwrite, IProgressMonitor monitor);
-		public abstract void DPush (string pushLocation, string localPath, bool remember, MonoDevelop.Core.IProgressMonitor monitor);
 		public abstract void Pull (string pullLocation, string localPath, bool remember, bool overwrite, IProgressMonitor monitor);
 		public abstract void Commit (ChangeSet changeSet, IProgressMonitor monitor);
 		public abstract DiffInfo[] Diff (string basePath, string[] files);
