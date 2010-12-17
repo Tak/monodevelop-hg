@@ -678,13 +678,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override void Init (string path)
 		{
-			StringBuilder command = new StringBuilder ();
-			command.Append ("format = bzrdir.format_registry.make_bzrdir(key='default-rich-root')\n");
-			command.AppendFormat ("to_transport = transport.get_transport(base=ur'{0}')\n", NormalizePath (path));
-			command.Append ("create_branch = bzrdir.BzrDir.create_branch_convenience\n");
-			command.Append ("mybranch = create_branch(base=to_transport.base, format=format, possible_transports=[to_transport])\n");
-			
-			run (null, command.ToString ());
+			RunMercurialCommand ("commands.init(myui,'{0}')", path);
 		}// Init
 		
 		public override void Ignore (string path)
