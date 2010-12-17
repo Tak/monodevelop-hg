@@ -176,6 +176,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 			Mercurial.Pull (pullLocation, localPath.FullPath, remember, overwrite, monitor);
 		}// Pull
 
+		public virtual void Rebase (string pullLocation, FilePath localPath, bool remember, bool overwrite, IProgressMonitor monitor) {
+			Mercurial.StoreCredentials (pullLocation);
+			Mercurial.Rebase (pullLocation, localPath.FullPath, monitor);
+		}// Rebase
+
 		public virtual void Merge (string mergeLocation, FilePath localPath, bool remember, bool overwrite, IProgressMonitor monitor) {
 			Mercurial.StoreCredentials (mergeLocation);
 			Mercurial.Merge (mergeLocation, localPath.FullPath, remember, overwrite, new MercurialRevision (this, MercurialRevision.NONE), new MercurialRevision (this, MercurialRevision.NONE), monitor);

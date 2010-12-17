@@ -62,7 +62,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		Unbind,
 		Uncommit,
 		Export,
-		Push
+		Push,
+		Rebase
 	}
 
 	/// <summary>
@@ -154,6 +155,47 @@ namespace MonoDevelop.VersionControl.Mercurial
 				bsd.Destroy ();
 			}
 		}// OnPull
+
+		/// <summary>
+		/// Determines whether a rebase can be performed.
+		/// </summary>
+		[CommandUpdateHandler (MercurialCommands.Rebase)]
+		protected void CanRebase (CommandInfo item)
+		{
+			CanPull (item);
+		}// CanRebase
+
+		/// <summary>
+		/// Performs a pull.
+		/// </summary>
+		[CommandHandler (MercurialCommands.Rebase)]
+		protected void OnRebase()
+		{
+			VersionControlItem vcitem = GetItems ()[0];
+			MercurialRepository repo = ((MercurialRepository)vcitem.Repository);
+			Dictionary<string, BranchType> branches = repo.GetKnownBranches (vcitem.Path);
+			string   defaultBranch = string.Empty,
+			         localPath = vcitem.IsDirectory? (string)vcitem.Path.FullPath: Path.GetDirectoryName (vcitem.Path.FullPath);
+
+			foreach (KeyValuePair<string, BranchType> branch in branches) {
+				if (BranchType.Parent == branch.Value) {
+					defaultBranch = branch.Key;
+					break;
+				}
+			}// check for parent branch
+
+			Dialogs.BranchSelectionDialog bsd = new Dialogs.BranchSelectionDialog (branches.Keys, defaultBranch, localPath, false, true, true, false);
+			try {
+				if ((int)Gtk.ResponseType.Ok == bsd.Run () && !string.IsNullOrEmpty (bsd.SelectedLocation)) {
+					MercurialTask worker = new MercurialTask ();
+					worker.Description = string.Format ("Rebasing on {0}", bsd.SelectedLocation);
+					worker.Operation = delegate{ repo.Rebase (bsd.SelectedLocation, vcitem.Path, bsd.SaveDefault, bsd.Overwrite, worker.ProgressMonitor); };
+					worker.Start ();
+				}
+			} finally {
+				bsd.Destroy ();
+			}
+		}// OnRebase
 		
 		/// <summary>
 		/// Determines whether a merge can be performed.

@@ -698,15 +698,16 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override bool IsBound (string path)
 		{
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("b = branch.Branch.open_containing(url=ur'{0}')[0]\n", NormalizePath (path));
-			command.AppendFormat ("bound = repr(b.get_bound_location())\n");
-			
-			return ("None" != StringFromPython(run (new List<string>{"bound"}, command.ToString ())[0]));
+			// Mercurial doesn't support bound branches yet (by default)
+			return false;
 		}// IsBound
 		
 		public override string GetBoundBranch (string path)
 		{
+			// Mercurial doesn't support bound branches yet (by default)
+			return string.Empty;
+			
+			/*
 			string method = (IsBound (path)? "get_bound_location": "get_old_bound_location");
 			string location = string.Empty;
 			
@@ -716,10 +717,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 			
 			location = StringFromPython(run (new List<string>{"bound"}, command.ToString ())[0]);
 			return ("None" == location? string.Empty: location);
+			*/
 		}// GetBoundBranch
 		
 		public override void Bind (string branchUrl, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
+			// Mercurial doesn't support bound branches yet (by default)
+			
+			/*
 			run (null, "b = branch.Branch.open_containing(url=ur'{0}')[0]\n", localPath);
 			monitor.Log.WriteLine ("Opened {0}", NormalizePath (localPath));
 			
@@ -728,15 +733,20 @@ namespace MonoDevelop.VersionControl.Mercurial
 			
 			run (null, "b.bind(other=remoteb)\n");
 			monitor.Log.WriteLine ("Bound {0} to {1}", localPath, branchUrl);
+			*/
 		}// Bind
 
 		public override void Unbind (string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
+			// Mercurial doesn't support bound branches yet (by default)
+			
+			/*
 			run (null, "b = branch.Branch.open_containing(url=ur'{0}')[0]\n", NormalizePath (localPath));
 			monitor.Log.WriteLine ("Opened {0}", localPath);
 			
 			run (null, "b.unbind()\n");
 			monitor.Log.WriteLine ("Unbound {0}", localPath);
+			*/
 		}// Unbind
 		
 		public override void Uncommit (string localPath, MonoDevelop.Core.IProgressMonitor monitor)
@@ -817,6 +827,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override bool CanRebase ()
 		{
+			return true;
+			/*
 			string haveRebase = null;
 			StringBuilder command = new StringBuilder ();
 			command.AppendFormat ("haveRebase = 'false'\n");
@@ -830,29 +842,17 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			return "true".Equals (haveRebase, StringComparison.Ordinal);
+			*/
 		}// CanRebase
 		
-		/**
-		 * Needs update to rebase (See launchpad bug #459371)
-		public void Rebase (string mergeLocation, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
+		public override void Rebase (string mergeLocation, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
+			localPath = NormalizePath (Path.GetFullPath (localPath));
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			string output = string.Empty;
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("mycmd = builtins.cmd_rebase()\n");
-			command.AppendFormat ("mycmd.outf = StringIO.StringIO()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat (string.Format ("  mycmd.run(upstream_location='{0}', directory='{1}')\n", mergeLocation, localPath));
-			command.AppendFormat ("  output = mycmd.outf.getvalue()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  mycmd.outf.close()\n");
-			
-			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
-			
+			string output = RunMercurialRepoCommand (localPath, "commands.pull(repo.ui,repo,'{0}',update=True,rebase=True)", mergeLocation);
 			monitor.Log.WriteLine (output);
-			monitor.Log.WriteLine ("Rebased to {0}", localPath);
+			monitor.Log.WriteLine ("Pulled to {0}", localPath);
 		}// Rebase
-		 */
 		 
 		/// <summary>
 		/// Normalize a local file path (primarily for windows)
