@@ -310,12 +310,12 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public virtual bool CanPull (FilePath localPath)
 		{
-			return Directory.Exists (localPath.FullPath) && CanUpdate (localPath);
+			return Directory.Exists (localPath.FullPath) && base.CanUpdate (localPath);
 		}// CanPull
 
 		public virtual bool CanMerge (FilePath localPath)
 		{
-			return Directory.Exists (localPath.FullPath) && CanUpdate (localPath);
+			return Directory.Exists (localPath.FullPath) && base.CanUpdate (localPath);
 		}// CanMerge
 		
 		public virtual bool CanBind (FilePath localPath)
@@ -337,6 +337,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 		    return IsVersioned (localPath);
 		}// CanGetAnnotations
+		
+		public override bool CanUpdate (FilePath localPath)
+		{
+			return false;
+		}
 
 		/// <summary>
 		/// Finds the repository root for a path
