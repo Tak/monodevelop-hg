@@ -237,11 +237,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		}// Merge
 
 		public void Push (string pushLocation, string localPath, bool remember, bool overwrite, bool omitHistory, IProgressMonitor monitor) {
-			if (omitHistory) {
-				Client.DPush (pushLocation, localPath, remember, monitor);
-			} else {
-				Client.Push (pushLocation, localPath, remember, overwrite, monitor);
-			}
+			Client.Push (pushLocation, localPath, remember, overwrite, monitor);
 		}// Push
 
 		public void Pull (string pullLocation, string localPath, bool remember, bool overwrite, IProgressMonitor monitor) {

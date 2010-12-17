@@ -578,28 +578,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			monitor.Log.WriteLine (output);
 			monitor.Log.WriteLine ("Pushed to {0}", pushLocation);
 		}
-		
-		public override void DPush (string pushLocation, string localPath, bool remember, MonoDevelop.Core.IProgressMonitor monitor)
-		{
-			localPath = NormalizePath (Path.GetFullPath (localPath));
-			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			string output = string.Empty;
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("mycmd = foreign.cmd_dpush()\n");
-			command.AppendFormat ("mycmd.outf = StringIO.StringIO()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat (string.Format ("  mycmd.run(location=ur'{0}',remember={1}, directory=ur'{2}', strict=False)\n",
-			                                   pushLocation, remember? "True": "False",
-			                                   localPath));
-			command.AppendFormat ("  output = mycmd.outf.getvalue()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  mycmd.outf.close()\n");
-			
-			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
-			
-			monitor.Log.WriteLine (output);
-			monitor.Log.WriteLine ("Pushed to {0}", pushLocation);
-		}// DPush
 
 		public override void Remove (string path, bool force, MonoDevelop.Core.IProgressMonitor monitor)
 		{

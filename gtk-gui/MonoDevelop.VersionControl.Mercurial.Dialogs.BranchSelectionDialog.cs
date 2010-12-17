@@ -80,6 +80,7 @@ namespace MonoDevelop.VersionControl.Mercurial.Dialogs
 			w6.Position = 1;
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.omitCB = new global::Gtk.CheckButton ();
+			this.omitCB.Sensitive = false;
 			this.omitCB.CanFocus = true;
 			this.omitCB.Name = "omitCB";
 			this.omitCB.Label = global::Mono.Unix.Catalog.GetString ("O_mit History");
@@ -132,6 +133,7 @@ namespace MonoDevelop.VersionControl.Mercurial.Dialogs
 			}
 			this.DefaultWidth = 400;
 			this.DefaultHeight = 257;
+			this.omitCB.Hide ();
 			this.Show ();
 			this.omitCB.Toggled += new global::System.EventHandler (this.OnOmitCBToggled);
 		}
