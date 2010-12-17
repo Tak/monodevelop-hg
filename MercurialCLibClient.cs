@@ -457,7 +457,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 			path = NormalizePath (Path.GetFullPath (path));
 			foreach (string remote in RunMercurialRepoCommand (path, "commands.paths(repo.ui, repo)")
 			         .Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
-				branches.Add (remote, BranchType.Public);
+				string[] tokens = remote.Split (new[]{'='}, 2);
+				branches.Add (tokens[0].Trim (), BranchType.Public);
 			}
 			
 			return branches;
@@ -563,19 +564,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Pull (string pullLocation, string localPath, bool remember, bool overwrite, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
-			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			string output = string.Empty;
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("mycmd = builtins.cmd_pull()\n");
-			command.AppendFormat ("mycmd.outf = StringIO.StringIO()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat ("  mycmd.run(location=ur'{0}',remember={1},overwrite={2},directory=ur'{3}',verbose=True)\n", pullLocation, remember? "True": "False", overwrite? "True": "False", localPath);
-			command.AppendFormat ("  output = mycmd.outf.getvalue()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  mycmd.outf.close()\n");
-			
-			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
-			
+			string output = RunMercurialRepoCommand (localPath, "commands.pull(repo.ui,repo,'{0}',update=True)", pullLocation);
 			monitor.Log.WriteLine (output);
 			monitor.Log.WriteLine ("Pulled to {0}", localPath);
 		}
