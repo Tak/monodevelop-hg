@@ -95,7 +95,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract string Version{ get; }
 		public abstract IList<string> List (string path, bool recurse, ListKind kind);
 		public abstract IList<LocalStatus> Status (string path, MercurialRevision revision);
-		public abstract string GetPathUrl (string path);
+		// public abstract string GetPathUrl (string path);
 		public abstract void Update (string localPath, bool recurse, IProgressMonitor monitor);
 		public abstract void Revert (string localPath, bool recurse, IProgressMonitor monitor, MercurialRevision toRevision);
 		public abstract void Add (string localPath, bool recurse, IProgressMonitor monitor);
