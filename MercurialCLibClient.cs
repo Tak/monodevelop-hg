@@ -394,6 +394,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 				}
 			}
 			
+			// FIXME: Need to add changesets for changed revisions
 			return revisions.ToArray ();
 			
 			
@@ -462,6 +463,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return branches;
 		}// GetKnownBranches
 
+		/*
 		public override string GetPathUrl (string path)
 		{
 			IntPtr branch = IntPtr.Zero;
@@ -472,6 +474,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 				return baseurl.StartsWith ("file://", StringComparison.Ordinal)? baseurl.Substring (7): baseurl;
 			}
 		}
+		*/
 
 		public override string GetTextAtRevision (string path, MercurialRevision rev)
 		{

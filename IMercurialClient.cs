@@ -66,7 +66,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// <summary>
 		/// Gets the root url for a path
 		/// </summary>
-		string GetPathUrl (string path);
+		// string GetPathUrl (string path);
 
 		/// <summary>
 		/// Updates a local path
