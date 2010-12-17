@@ -38,8 +38,8 @@
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" insertafter="MonoDevelop.VersionControl.Commands.Update" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Rebase" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Rebase" />
-			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" />
 			<!--
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Unbind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" />
 			-->
