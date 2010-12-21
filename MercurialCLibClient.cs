@@ -664,8 +664,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Update (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
+			/*
 			localPath = NormalizePath (Path.GetFullPath (localPath));
 			lock (lockme){ run (null, "tree = workingtree.WorkingTree.open_containing(path=ur\"{0}\")[0]\ntree.update()\n", localPath); }
+			*/
 		}
 		
 		public override void StoreCredentials (string url)
