@@ -217,7 +217,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		Unversioned = '?',
 		Unchanged = 'C',
 		Added = 'A',
-		Conflicted = 'Z', // FIXME
+		Conflicted = 'U',
 		Deleted = 'R',
 		Ignored = 'I',
 		Modified = 'M',
