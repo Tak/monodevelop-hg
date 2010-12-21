@@ -608,8 +608,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			List<LocalStatus> statuses = new List<LocalStatus> ();
 			string rev = string.Empty;
-			bool modified = false;
 			ItemStatus itemStatus;
+			LocalStatus mystatus = null;
+			LocalStatus tmp;
+			bool modified = false;
 			
 					
 			path = NormalizePath (Path.GetFullPath (path).Replace ("{", "{{").Replace ("}", "}}"));// escape for string.format
@@ -625,9 +627,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 				string[] tokens = line.Split (new[]{' '}, 2);
 				itemStatus = (ItemStatus)tokens[0][0];
 				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
-				statuses.Add (new LocalStatus (string.Empty, Path.GetFullPath (NormalizePath (tokens[1])), itemStatus));
+				tmp = new LocalStatus (string.Empty, Path.GetFullPath (NormalizePath (tokens[1])), itemStatus);
+				statuses.Add (tmp);
 				if (itemStatus != ItemStatus.Ignored && itemStatus != ItemStatus.Unversioned && itemStatus != ItemStatus.Unchanged) {
 					modified = true;
+				}
+				if (Path.GetFileName (path).Equals (Path.GetFileName (tokens[1]), StringComparison.OrdinalIgnoreCase)) {
+					mystatus = tmp;
 				}
 			}
 			
@@ -649,7 +655,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
 			}
 			
-			statuses.Insert (0, new LocalStatus (string.Empty, GetLocalBasePath (path), modified? ItemStatus.Modified: ItemStatus.Unchanged));
+			if (null == mystatus) {
+				statuses.Insert (0, new LocalStatus (string.Empty, GetLocalBasePath (path), modified? ItemStatus.Modified: ItemStatus.Unchanged));
+			}
 			
 			return statuses;
 		}
