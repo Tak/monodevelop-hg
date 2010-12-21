@@ -588,11 +588,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Resolve (string path, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			path = NormalizePath (Path.GetFullPath (path));
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("tree,relpath = workingtree.WorkingTree.open_containing(path=ur\"{0}\")\n", path);
-			command.AppendFormat ("conflicts.resolve(tree=tree, paths=[relpath], recursive={1})\n", Path.GetFullPath (path), recurse? "True": "False");
-
-			lock (lockme){ run (null, command.ToString ()); }
+			RunMercurialRepoCommand (path, "commands.resolve(repo.ui,repo,'{0}',mark=True)", path);
 		}
 
 		public override void Revert (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor, MercurialRevision toRevision)
@@ -634,6 +630,25 @@ namespace MonoDevelop.VersionControl.Mercurial
 					modified = true;
 				}
 			}
+			
+			string conflictText = RunMercurialRepoCommand (path, "commands.resolve(repo.ui,repo,'{0}',list=True)", path);
+			System.Console.WriteLine (conflictText);
+			foreach (string line in conflictText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
+				string[] tokens = line.Split (new[]{' '}, 2);
+				itemStatus = (ItemStatus)tokens[0][0];
+				if (ItemStatus.Conflicted == itemStatus) {
+					LocalStatus status = statuses.Find ((s)=>
+						s.Filename.EndsWith (tokens[1], StringComparison.OrdinalIgnoreCase)
+					);
+					if (null == status) {
+						statuses.Add (new LocalStatus (MercurialRevision.HEAD, tokens[1], ItemStatus.Conflicted));
+					} else {
+						status.Status = ItemStatus.Conflicted;
+					}
+				}
+				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
+			}
+			
 			statuses.Insert (0, new LocalStatus (string.Empty, GetLocalBasePath (path), modified? ItemStatus.Modified: ItemStatus.Unchanged));
 			
 			return statuses;
