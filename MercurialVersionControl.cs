@@ -66,10 +66,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 		}// Client
 		
-		public override Widget CreateRepositoryEditor (Repository repo)
+		public override IRepositoryEditor CreateRepositoryEditor (Repository repo)
 		{
 			return IsInstalled ?
-				new UrlBasedRepositoryEditor ((MercurialRepository)repo, protocols):
+				new UrlBasedRepositoryEditor ((MercurialRepository)repo):
 				null;
 		}// CreateRepositoryEditor
 
@@ -115,7 +115,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			VersionStatus rs = VersionStatus.Unversioned;
 			Revision rr = null;
 			
-			Console.WriteLine ("Creating node for status {0}", status.Filename);
+			// Console.WriteLine ("Creating node for status {0}", status.Filename);
 			
 			VersionStatus vstatus = ConvertStatus (status.Status);
 			// System.Console.WriteLine ("Converted {0} to {1} for {2}", status.Status, vstatus, status.Filename);
