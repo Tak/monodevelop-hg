@@ -30,6 +30,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 	{
 		private Dictionary<string,string> tempfiles;
 		private Dictionary<FilePath,VersionInfo> statusCache;
+
+
+		public override string[] SupportedProtocols {
+			get { return MercurialVersionControl.protocols; }
+		}		
 		
 		public MercurialRepository ()
 		{
@@ -44,7 +49,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		private void Init ()
 		{
-			Method = MercurialVersionControl.protocols[0];
 			tempfiles = new Dictionary<string,string> ();
 			statusCache = new Dictionary<FilePath, VersionInfo> ();
 		}// Init
