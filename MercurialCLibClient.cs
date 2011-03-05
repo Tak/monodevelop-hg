@@ -118,24 +118,22 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			List<IntPtr> rv = new List<IntPtr> ();
 			
-			DispatchService.GuiSyncDispatch (() => {
-				if (0 != PyRun_SimpleString (string.Format (command, format))) {
-					string trace = "Unable to retrieve error data.";
-					if (0 == PyRun_SimpleString ("trace = ''.join(traceback.format_exception(sys.last_type, sys.last_value, sys.last_traceback))\n")) {
-						trace = StringFromPython (PyMapping_GetItemString (maindict, "trace"));
-					}
-					PyErr_Clear ();
-					
-					throw new MercurialClientException(string.Format ("Error running '{0}': {1}{2}", string.Format (command, format), Environment.NewLine, trace));
-				}
-			
-				if (null != variables) {
-					rv = variables.ConvertAll<IntPtr> (delegate(string variable){ 
-						return PyMapping_GetItemString (maindict, variable);
-					});
+			if (0 != PyRun_SimpleString (string.Format (command, format))) {
+				string trace = "Unable to retrieve error data.";
+				if (0 == PyRun_SimpleString ("trace = ''.join(traceback.format_exception(sys.last_type, sys.last_value, sys.last_traceback))\n")) {
+					trace = StringFromPython (PyMapping_GetItemString (maindict, "trace"));
 				}
 				PyErr_Clear ();
-			});
+				
+				throw new MercurialClientException(string.Format ("Error running '{0}': {1}{2}", string.Format (command, format), Environment.NewLine, trace));
+			}
+		
+			if (null != variables) {
+				rv = variables.ConvertAll<IntPtr> (delegate(string variable){ 
+					return PyMapping_GetItemString (maindict, variable);
+				});
+			}
+			PyErr_Clear ();
 			
 			return rv;
 		}// run
@@ -215,7 +213,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			command.Append ("repo.ui.pushbuffer()\n");
 			command.AppendFormat (baseCommand, args);
 			command.Append ("\noutput=repo.ui.popbuffer()\n");
-			Console.WriteLine ("Running: {0}", command.ToString());
+			// Console.WriteLine ("Running: {0}", command.ToString());
 			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
 			
 			return output;
@@ -380,7 +378,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			string message = string.Empty;
 			
 			foreach (string line in logText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
-				Console.WriteLine ("Parsing {0}", line);
+				// Console.WriteLine ("Parsing {0}", line);
 				if (line.TrimStart ().StartsWith (localizedChangeset, StringComparison.Ordinal)) {
 					changeset = line.Substring (localizedChangeset.Length).TrimStart ();
 					changeset = changeset.Substring (0, changeset.IndexOf (':'));
@@ -621,12 +619,12 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			string statusText = RunMercurialRepoCommand (path, "commands.status(repo.ui,repo,'{0}',all=True{1})\n", path, rev);
-			Console.WriteLine (statusText);
+			// Console.WriteLine (statusText);
 			
 			foreach (string line in statusText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
 				string[] tokens = line.Split (new[]{' '}, 2);
 				itemStatus = (ItemStatus)tokens[0][0];
-				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
+				// Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
 				tmp = new LocalStatus (string.Empty, Path.GetFullPath (NormalizePath (tokens[1])), itemStatus);
 				statuses.Add (tmp);
 				if (itemStatus != ItemStatus.Ignored && itemStatus != ItemStatus.Unversioned && itemStatus != ItemStatus.Unchanged) {
@@ -638,7 +636,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			string conflictText = RunMercurialRepoCommand (path, "commands.resolve(repo.ui,repo,'{0}',list=True)", path);
-			System.Console.WriteLine (conflictText);
+			// System.Console.WriteLine (conflictText);
 			foreach (string line in conflictText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
 				string[] tokens = line.Split (new[]{' '}, 2);
 				itemStatus = (ItemStatus)tokens[0][0];
@@ -652,7 +650,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 						status.Status = ItemStatus.Conflicted;
 					}
 				}
-				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
+//				Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
 			}
 			
 			if (null == mystatus) {
