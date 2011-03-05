@@ -76,8 +76,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			try {
 				IList<LocalStatus> statuses = Status (path, null);
-				System.Console.WriteLine ("IsVersioned: Got back {0} statuses for {1}", statuses.Count, path);
-				if (0 < statuses.Count){ System.Console.WriteLine ("{0} {1}", Path.GetFullPath (path), statuses[0].Filename); }
+				// System.Console.WriteLine ("IsVersioned: Got back {0} statuses for {1}", statuses.Count, path);
+				// if (0 < statuses.Count){ System.Console.WriteLine ("{0} {1}", Path.GetFullPath (path), statuses[0].Filename); }
 				if (1 != statuses.Count || 
 				!Path.GetFullPath (path).EndsWith (statuses[0].Filename)) {
 					return true;

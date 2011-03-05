@@ -487,7 +487,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		[CommandUpdateHandler (Commands.Publish)]
 		[CommandUpdateHandler (MercurialCommands.Push)]
 		protected void UpdateMercurialPublish(CommandInfo item) {
-			System.Console.WriteLine ("Updating mercurial publish");
+			// System.Console.WriteLine ("Updating mercurial publish");
 			CanPull (item);
 		}// UpdatePublish
 		
