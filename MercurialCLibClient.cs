@@ -359,12 +359,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			*/
 		}
 
-		// static Regex revisionRegex = new Regex (@"^\s*(?<revision>[\d\.]+): (?<committer>.*) (?<date>\d{4}-\d{2}-\d{2}) (?<message>.*)", RegexOptions.Compiled);
-		
-		static string localizedChangeset = GettextCatalog.GetString ("changeset:");
-		static string localizedDate = GettextCatalog.GetString ("date:");
-		static string localizedUser = GettextCatalog.GetString ("user:");
-		static string localizedMessage = GettextCatalog.GetString ("summary:");
 			
 		public override MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since)
 		{
@@ -394,61 +388,19 @@ namespace MonoDevelop.VersionControl.Mercurial
 				revisions.Add (new MercurialRevision (repo, changeset, DateTime.Parse (date), user, message, new RevisionPath[]{}));
 			}
 			
-			
-			// FIXME: Need to add changesets for changed revisions
-			return revisions.ToArray ();
-			
-			
-			
-			/*
-			localFile = NormalizePath (Path.GetFullPath (localFile));
-			List<MercurialRevision> history = new List<MercurialRevision> ();
-			string basePath = MercurialRepository.GetLocalBasePath (localFile);
-			
-			string output = null;
-			string revString = "None";
-			
-			if (null != since && MercurialRevision.FIRST != since.Rev && MercurialRevision.NONE != since.Rev) {
-				revString = string.Format("'{0}..'", since.Rev);
-			}
-			
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("mycmd = builtins.cmd_log()\n");
-			command.AppendFormat ("mycmd.outf = StringIO.StringIO()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat (string.Format ("  mycmd.run(file_list=[ur'{0}'],revision={1},log_format=log.log_formatter_registry.get('line'),include_merges=True)\n", 
-			                    localFile, revString));
-			                    
-			command.AppendFormat ("  output = mycmd.outf.getvalue()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  mycmd.outf.close()\n");
-			
-			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
-			
-			Match match = null;
-			foreach (string line in output.Split (new char[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
-				match = revisionRegex.Match (line);
-				if (null != match && match.Success) {
-					DateTime date;
-					DateTime.TryParse (match.Groups["date"].Value, out date);
-					history.Add (new MercurialRevision (repo, match.Groups["revision"].Value, date,
-					                                 match.Groups["committer"].Value, match.Groups["message"].Value,
-					                                 new RevisionPath[]{}));
-				}
-			}
-			
 			ThreadPool.QueueUserWorkItem (delegate {
-				foreach (MercurialRevision rev in history) {
+				string basePath = MercurialRepository.GetLocalBasePath (localFile);
+				foreach (MercurialRevision rev in revisions) {
 					List<RevisionPath> paths = new List<RevisionPath> ();
-					foreach (LocalStatus status in Status (basePath, rev)) {
+					foreach (LocalStatus status in Status (basePath, rev)
+					         .Where (s => s.Status != ItemStatus.Unchanged && s.Status != ItemStatus.Unversioned)) {
 						paths.Add (new RevisionPath (status.Filename, ConvertAction (status.Status), status.Status.ToString ()));
 					}
 					rev.ChangedFiles = paths.ToArray ();
 				}
 			});
-				
-			return history.ToArray ();
-			*/
+			
+			return revisions.ToArray ();
 		}// GetHistory
 
 		public override System.Collections.Generic.Dictionary<string, BranchType> GetKnownBranches (string path)
