@@ -300,7 +300,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 					IList<LocalStatus> statuses = Status (basePath, new MercurialRevision (null, MercurialRevision.HEAD));
 					List<string> foundFiles = new List<string> ();
 					foreach (LocalStatus status in statuses) {
-						if (ItemStatus.Unchanged != status.Status) {
+						if (ItemStatus.Unchanged != status.Status && ItemStatus.Unversioned != status.Status) {
 							foundFiles.Add (status.Filename);
 						}
 					}
