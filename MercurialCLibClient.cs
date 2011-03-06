@@ -17,6 +17,7 @@
 
 using System;
 using System.IO;
+using System.Xml;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -373,24 +374,26 @@ namespace MonoDevelop.VersionControl.Mercurial
 			
 			string changeset = string.Empty;
 			string date = string.Empty; // FIXME
-			string logText = RunMercurialRepoCommand (localFile, "commands.log(repo.ui,repo,'{0}',date=None,user=None{1})", localFile, ",rev=None");
+			string logText = RunMercurialRepoCommand (localFile, "commands.log(repo.ui,repo,'{0}',date=None,user=None{1},style='xml')", localFile, ",rev=None");
 			string user = string.Empty;
 			string message = string.Empty;
 			
-			foreach (string line in logText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
-				// Console.WriteLine ("Parsing {0}", line);
-				if (line.TrimStart ().StartsWith (localizedChangeset, StringComparison.Ordinal)) {
-					changeset = line.Substring (localizedChangeset.Length).TrimStart ();
-					changeset = changeset.Substring (0, changeset.IndexOf (':'));
-				} else if (line.StartsWith (localizedDate, StringComparison.Ordinal)) {
-					date = line.Substring (localizedDate.Length).TrimStart ();
-				} else if (line.StartsWith (localizedUser, StringComparison.Ordinal)) {
-					user = line.Substring (localizedUser.Length).TrimStart ();
-				} else if (line.StartsWith (localizedMessage, StringComparison.Ordinal)) {
-					message = line.Substring (localizedMessage.Length);
-					revisions.Add (new MercurialRevision (repo, changeset, DateTime.MinValue/* FIXME */, user, message, new RevisionPath[]{}));
-				}
+			XmlDocument doc = new XmlDocument ();
+			try {
+				doc.LoadXml (logText);
+			} catch (XmlException xe) {
+				LoggingService.LogError ("Error getting history for " + localFile, xe);
+				return revisions.ToArray ();
 			}
+			
+			foreach (XmlNode node in doc.SelectNodes ("/log/logentry")) {
+				changeset = node.Attributes["revision"].Value;
+				date = node.SelectSingleNode ("date").InnerText;
+				user = node.SelectSingleNode ("author").Attributes["email"].Value;
+				message = node.SelectSingleNode ("msg").InnerText;
+				revisions.Add (new MercurialRevision (repo, changeset, DateTime.Parse (date), user, message, new RevisionPath[]{}));
+			}
+			
 			
 			// FIXME: Need to add changesets for changed revisions
 			return revisions.ToArray ();
