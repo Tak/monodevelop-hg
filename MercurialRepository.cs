@@ -352,6 +352,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return false;
 		}
 
+		public override bool CanRemove (MonoDevelop.Core.FilePath localPath)
+		{
+		    return IsVersioned (localPath);
+		}
+		
 		/// <summary>
 		/// Finds the repository root for a path
 		/// </summary>
