@@ -275,7 +275,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			List<string> files = new List<string> ();
 			string   basePath = MercurialRepository.GetLocalBasePath (changeSet.BaseLocalPath),
 			         pyfiles = string.Empty,
-			         escapedComment = changeSet.GlobalComment.Replace(Environment.NewLine, " ").Replace("\"", "\\\"");
+			         messageFile = Path.GetTempFileName ();
 			if (!basePath.EndsWith (Path.DirectorySeparatorChar.ToString (), StringComparison.Ordinal)) {
 				basePath += Path.DirectorySeparatorChar;
 			}
@@ -288,7 +288,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 				pyfiles = string.Format ("'{0}',", string.Join ("','", files.ToArray ()));
 			}
 			
-			RunMercurialRepoCommand (basePath, "commands.commit(repo.ui,repo,{1}message='{0}')", escapedComment, pyfiles);
+			try {
+				File.WriteAllText (messageFile, changeSet.GlobalComment);
+				RunMercurialRepoCommand (basePath, "commands.commit(repo.ui,repo,{1}logfile='{0}')", messageFile, pyfiles);
+			} finally {
+				try {
+					File.Delete (messageFile);
+				} catch { }
+			}
 		}
 		
 		public override DiffInfo[] Diff (string basePath, string[] files)
