@@ -624,10 +624,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Update (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			/*
 			localPath = NormalizePath (Path.GetFullPath (localPath));
-			lock (lockme){ run (null, "tree = workingtree.WorkingTree.open_containing(path=ur\"{0}\")[0]\ntree.update()\n", localPath); }
-			*/
+			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
+			string output = RunMercurialRepoCommand (localPath, "commands.update(repo.ui,repo)");
+			monitor.Log.WriteLine (output);
 		}
 		
 		public override void StoreCredentials (string url)
