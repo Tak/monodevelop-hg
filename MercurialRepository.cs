@@ -349,7 +349,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override bool CanUpdate (FilePath localPath)
 		{
-			return false;
+			return IsVersioned (localPath);
 		}
 
 		public override bool CanRemove (MonoDevelop.Core.FilePath localPath)
