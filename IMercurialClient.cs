@@ -170,30 +170,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 		MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since);
 		
 		/// <summary>
-		/// Performs a merge
+		/// Performs a merge of outstanding heads
 		/// </summary>
-		/// <param name="mergeLocation">
-		/// A <see cref="System.String"/>: The path from which to merge
-		/// </param>
-		/// <param name="localPath">
-		/// A <see cref="System.String"/>: The path to which to merge
-		/// </param>
-		/// <param name="remember">
-		/// A <see cref="System.Boolean"/>: Whether mergeLocation should be remembered
-		/// </param>
-		/// <param name="overwrite">
-		/// A <see cref="System.Boolean"/>: Whether to overwrite uncommitted changes at localPath
-		/// </param>
-		/// <param name="start">
-		/// A <see cref="MercurialRevision"/>: The revision to begin merging
-		/// </param>
-		/// <param name="end">
-		/// A <see cref="MercurialRevision"/>: The revision to stop merging
-		/// </param>
-		/// <param name="monitor">
-		/// A <see cref="IProgressMonitor"/>: The progress monitor to use
-		/// </param>
-		void Merge (string mergeLocation, string localPath, bool remember, bool overwrite, MercurialRevision start, MercurialRevision end, IProgressMonitor monitor);
+		void Merge (MercurialRepository repository);
 
 		/// <summary>
 		/// Performs a push
@@ -444,5 +423,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// Whether the rebase plugin is installed
 		/// </summary>
 		bool CanRebase ();
+		
+		/// <summary>
+		/// Gets the heads of a given repository.
+		/// </summary>
+		MercurialRevision[] GetHeads (MercurialRepository repo);
 	}
 }

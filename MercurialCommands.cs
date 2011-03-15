@@ -218,41 +218,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			VersionControlItem vcitem = GetItems ()[0];
 			MercurialRepository repo = ((MercurialRepository)vcitem.Repository);
-			Dictionary<string, BranchType> branches = repo.GetKnownBranches (vcitem.Path);
-			string   defaultBranch = string.Empty,
-			         localPath = vcitem.IsDirectory? (string)vcitem.Path.FullPath: Path.GetDirectoryName (vcitem.Path.FullPath);
-
-			if (repo.IsModified (MercurialRepository.GetLocalBasePath (vcitem.Path.FullPath))) {
-				MessageDialog md = new MessageDialog (null, DialogFlags.Modal, 
-				                                      MessageType.Question, ButtonsType.YesNo, 
-				                                      GettextCatalog.GetString ("You have uncommitted local changes. Merge anyway?"));
-				try {
-					if ((int)ResponseType.Yes != md.Run ()) {
-						return;
-					}
-				} finally {
-					md.Destroy ();
-				}
-			}// warn about uncommitted changes
-
-			foreach (KeyValuePair<string, BranchType> branch in branches) {
-				if (BranchType.Parent == branch.Value) {
-					defaultBranch = branch.Key;
-					break;
-				}
-			}// check for parent branch
-
-			Dialogs.BranchSelectionDialog bsd = new Dialogs.BranchSelectionDialog (branches.Keys, defaultBranch, localPath, false, true, false, false);
-			try {
-				if ((int)Gtk.ResponseType.Ok == bsd.Run () && !string.IsNullOrEmpty (bsd.SelectedLocation)) {
-					MercurialTask worker = new MercurialTask ();
-					worker.Description = string.Format ("Merging from {0}", bsd.SelectedLocation);
-					worker.Operation = delegate{ repo.Merge (bsd.SelectedLocation, vcitem.Path, bsd.SaveDefault, true, worker.ProgressMonitor); };
-					worker.Start ();
-				}
-			} finally {
-				bsd.Destroy ();
-			}
+			repo.Merge ();
 		}// OnMerge
 		
 		/// <summary>
