@@ -232,8 +232,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return Client.GetHistory (repo, localFile, brev);
 		}// GetHistory
 
-		public void Merge (string mergeLocation, string localPath, bool remember, bool overwrite, MercurialRevision start, MercurialRevision end, IProgressMonitor monitor) {
-			Client.Merge (mergeLocation, localPath, remember, overwrite, start, end, monitor);
+		public void Merge (MercurialRepository repository) {
+			Client.Merge (repository);
 		}// Merge
 
 		public void Push (string pushLocation, string localPath, bool remember, bool overwrite, bool omitHistory, IProgressMonitor monitor) {
@@ -247,6 +247,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public void Rebase (string pullLocation, string localPath, IProgressMonitor monitor) {
 			Client.Rebase (pullLocation, localPath, monitor);
 		}// Pull
+		
+		public MercurialRevision[] GetHeads (MercurialRepository repository) {
+			return Client.GetHeads (repository);
+		}
 		
 		public void Commit (ChangeSet changeSet, IProgressMonitor monitor) {
 			if (Client.IsMergePending (changeSet.BaseLocalPath.FullPath)) {

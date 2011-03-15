@@ -103,7 +103,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract void Branch (string branchLocation, string localPath, IProgressMonitor monitor);
 		public abstract string GetTextAtRevision (string path, MercurialRevision rev);
 		public abstract MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since);
-		public abstract void Merge (string mergeLocation, string localPath, bool remember, bool overwrite, MercurialRevision start, MercurialRevision end, IProgressMonitor monitor);
+		public abstract void Merge (MercurialRepository repository);
 		public abstract void Push (string pushLocation, string localPath, bool remember, bool overwrite, IProgressMonitor monitor);
 		public abstract void Pull (string pullLocation, string localPath, bool remember, bool overwrite, IProgressMonitor monitor);
 		public abstract void Rebase (string pullLocation, string localPath, IProgressMonitor monitor);
@@ -123,6 +123,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract void Uncommit (string localPath, MonoDevelop.Core.IProgressMonitor monitor);
 		public abstract Annotation[] GetAnnotations (string localPath);
 		public abstract void Export (string localPath, string exportPath, IProgressMonitor monitor);
+		public abstract MercurialRevision[] GetHeads (MercurialRepository repository);
 
 		#endregion 
 		

@@ -185,9 +185,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 			Mercurial.Rebase (pullLocation, localPath.FullPath, monitor);
 		}// Rebase
 
-		public virtual void Merge (string mergeLocation, FilePath localPath, bool remember, bool overwrite, IProgressMonitor monitor) {
-			Mercurial.StoreCredentials (mergeLocation);
-			Mercurial.Merge (mergeLocation, localPath.FullPath, remember, overwrite, new MercurialRevision (this, MercurialRevision.NONE), new MercurialRevision (this, MercurialRevision.NONE), monitor);
+		public virtual void Merge () {
+			Mercurial.Merge (this);
 		}// Merge
 		
 		public override void Update (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
@@ -248,22 +247,22 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void RevertRevision (FilePath localPath, Revision revision, IProgressMonitor monitor)
 		{
-			if (IsModified (MercurialRepository.GetLocalBasePath (localPath))) {
-				MessageDialog md = new MessageDialog (null, DialogFlags.Modal, 
-				                                      MessageType.Question, ButtonsType.YesNo, 
-				                                      GettextCatalog.GetString ("You have uncommitted local changes. Revert anyway?"));
-				try {
-					if ((int)ResponseType.Yes != md.Run ()) {
-						return;
-					}
-				} finally {
-					md.Destroy ();
-				}
-			}// warn about uncommitted changes
-
-			MercurialRevision brev = (MercurialRevision)revision;
-			string localPathStr = localPath.FullPath;
-			Mercurial.Merge (localPathStr, localPathStr, false, true, brev, (MercurialRevision)(brev.GetPrevious ()), monitor);
+//			if (IsModified (MercurialRepository.GetLocalBasePath (localPath))) {
+//				MessageDialog md = new MessageDialog (null, DialogFlags.Modal, 
+//				                                      MessageType.Question, ButtonsType.YesNo, 
+//				                                      GettextCatalog.GetString ("You have uncommitted local changes. Revert anyway?"));
+//				try {
+//					if ((int)ResponseType.Yes != md.Run ()) {
+//						return;
+//					}
+//				} finally {
+//					md.Destroy ();
+//				}
+//			}// warn about uncommitted changes
+//
+//			MercurialRevision brev = (MercurialRevision)revision;
+//			string localPathStr = localPath.FullPath;
+//			Mercurial.Merge (localPathStr, localPathStr, false, true, brev, (MercurialRevision)(brev.GetPrevious ()), monitor);
 		}
 
 		public override bool IsVersioned (FilePath localPath)
@@ -324,7 +323,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public virtual bool CanMerge (FilePath localPath)
 		{
-			return Directory.Exists (localPath.FullPath) && base.CanUpdate (localPath);
+			return (Mercurial.GetHeads (this).Length > 1);
 		}// CanMerge
 		
 		public virtual bool CanBind (FilePath localPath)

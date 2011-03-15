@@ -373,11 +373,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			string revText = ",rev=None"; // FIXME: string.Format (",rev='-1:{0}'", since.Rev);
 			List<MercurialRevision> revisions = new List<MercurialRevision> ();
 			
-			string changeset = string.Empty;
-			string date = string.Empty; // FIXME
 			string logText = RunMercurialRepoCommand (localFile, "commands.log(repo.ui,repo,'{0}',date=None,user=None{1},style='xml')", localFile, ",rev=None");
-			string user = string.Empty;
-			string message = string.Empty;
 			
 			XmlDocument doc = new XmlDocument ();
 			try {
@@ -388,11 +384,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			foreach (XmlNode node in doc.SelectNodes ("/log/logentry")) {
-				changeset = node.Attributes["revision"].Value;
-				date = node.SelectSingleNode ("date").InnerText;
-				user = node.SelectSingleNode ("author").Attributes["email"].Value;
-				message = node.SelectSingleNode ("msg").InnerText;
-				revisions.Add (new MercurialRevision (repo, changeset, DateTime.Parse (date), user, message, new RevisionPath[]{}));
+				revisions.Add (NodeToRevision (repo, node));
 			}
 			
 			ThreadPool.QueueUserWorkItem (delegate {
@@ -409,7 +401,37 @@ namespace MonoDevelop.VersionControl.Mercurial
 			
 			return revisions.ToArray ();
 		}// GetHistory
-
+		
+		public override MercurialRevision[] GetHeads (MercurialRepository repo)
+		{
+			string localPath = NormalizePath (Path.GetFullPath (repo.LocalBasePath));
+			string logText = RunMercurialRepoCommand (localPath, "commands.heads(repo.ui,repo,style='xml')", localPath);
+			List<MercurialRevision> revisions = new List<MercurialRevision> ();
+			
+			XmlDocument doc = new XmlDocument ();
+			try {
+				doc.LoadXml (logText);
+			} catch (XmlException xe) {
+				LoggingService.LogError ("Error getting heads for " + localPath, xe);
+				return revisions.ToArray ();
+			}
+			
+			foreach (XmlNode node in doc.SelectNodes ("/log/logentry")) {
+				revisions.Add (NodeToRevision (repo, node));
+			}
+			
+			return revisions.ToArray ();
+		}
+		
+		static MercurialRevision NodeToRevision (MercurialRepository repo, XmlNode node)
+		{
+			string changeset = node.Attributes["revision"].Value;
+			string date = node.SelectSingleNode ("date").InnerText;
+			string user = node.SelectSingleNode ("author").Attributes["email"].Value;
+			string message = node.SelectSingleNode ("msg").InnerText;
+			return new MercurialRevision (repo, changeset, DateTime.Parse (date), user, message, new RevisionPath[]{});
+		}
+		
 		public override System.Collections.Generic.Dictionary<string, BranchType> GetKnownBranches (string path)
 		{
 			// TODO: Test more thoroughly with remote repos
@@ -484,12 +506,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return found;
 		}// List
 
-		public override void Merge (string mergeLocation, string localPath, bool remember, bool overwrite, MercurialRevision start, MercurialRevision end, MonoDevelop.Core.IProgressMonitor monitor)
+		public override void Merge (MercurialRepository repository)
 		{
-			localPath = NormalizePath (Path.GetFullPath (localPath));
-			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			string output = RunMercurialRepoCommand (localPath, "commands.merge(repo.ui,repo)");
-			monitor.Log.WriteLine (output);
+			string localPath = NormalizePath (Path.GetFullPath (repository.LocalBasePath));
+			RunMercurialRepoCommand (localPath, "commands.merge(repo.ui,repo)");
 		}
 
 		public override void Pull (string pullLocation, string localPath, bool remember, bool overwrite, MonoDevelop.Core.IProgressMonitor monitor)
