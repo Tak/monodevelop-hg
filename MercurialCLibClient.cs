@@ -488,37 +488,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			
-			string revisionSpec = string.Empty;
-			string output = string.Empty;
-			
-			if (null != start && MercurialRevision.FIRST != start.Rev && MercurialRevision.NONE != start.Rev) {
-				string endrev = "-1";
-				if (null != end && MercurialRevision.HEAD != end.Rev && MercurialRevision.NONE != end.Rev) {
-					endrev = end.Rev;
-				}
-				revisionSpec = string.Format("'{0}..{1}'", start.Rev, endrev);
-			} else if (null != end && MercurialRevision.HEAD != end.Rev && MercurialRevision.NONE != end.Rev) {
-				revisionSpec = string.Format ("'1..{0}'", end.Rev);
-			}// build revisionspec string
-			
-			StringBuilder command = new StringBuilder ();
-			command.AppendFormat ("mycmd = builtins.cmd_merge()\n");
-			command.AppendFormat ("mycmd.outf = StringIO.StringIO()\n");
-			command.AppendFormat ("try:\n");
-			command.AppendFormat (string.Format ("  mycmd.run(location=ur'{0}',revision={1},force={4},remember={2},directory=ur'{3}')\n", 
-			                    mergeLocation, string.IsNullOrEmpty (revisionSpec)? "None": revisionSpec, 
-			                    remember? "True": "False", localPath, overwrite? "True": "False"));
-			                    
-			command.AppendFormat ("  output = mycmd.outf.getvalue()\n");
-			command.AppendFormat ("finally:\n");
-			command.AppendFormat ("  mycmd.outf.close()\n");
-			
-			lock (lockme){ output = StringFromPython (run (new List<string>{"output"}, command.ToString ())[0]); }
-			
+			string output = RunMercurialRepoCommand (localPath, "commands.merge(repo.ui,repo)");
 			monitor.Log.WriteLine (output);
-			
-			monitor.Log.WriteLine ("Merged to {0}", localPath);
 		}
 
 		public override void Pull (string pullLocation, string localPath, bool remember, bool overwrite, MonoDevelop.Core.IProgressMonitor monitor)
