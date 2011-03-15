@@ -534,7 +534,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
-			string output = RunMercurialRepoCommand (localPath, "commands.push(repo.ui,repo,'{0}',force={1})", pushLocation, overwrite? "True": "False");
+			string output = RunMercurialRepoCommand (localPath, "commands.push(repo.ui,repo,dest='{0}',force={1})", pushLocation, overwrite? "True": "False");
 			monitor.Log.WriteLine (output);
 			monitor.Log.WriteLine ("Pushed to {0}", pushLocation);
 		}
