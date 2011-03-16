@@ -55,7 +55,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 			
 			public override Revision GetPrevious ()
 			{
-				return new MercurialRevision (Repository, string.Format ("before:{0}", Rev));
+				int revno;
+				if (int.TryParse (Rev, out revno))
+					return new MercurialRevision (Repository, (revno-1).ToString ());
+				return new MercurialRevision (Repository, string.Format ("p1({0})", Rev));
 			}
 		}// MercurialRevision
 }
