@@ -365,8 +365,49 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return results.ToArray ();
 			*/
 		}
-
+		
+		public MercurialRevision[] GetIncoming (MercurialRepository repo, string remote)
+		{
+			List<MercurialRevision> revisions = new List<MercurialRevision> ();
 			
+			string logText = RunMercurialRepoCommand (repo.LocalBasePath, "commands.incoming(repo.ui,repo,'{0}',style='xml')", remote);
+			
+			XmlDocument doc = new XmlDocument ();
+			try {
+				doc.LoadXml (logText);
+			} catch (XmlException xe) {
+				LoggingService.LogError ("Error getting incoming for " + remote, xe);
+				return revisions.ToArray ();
+			}
+			
+			foreach (XmlNode node in doc.SelectNodes ("/log/logentry")) {
+				revisions.Add (NodeToRevision (repo, node));
+			}
+			
+			return revisions.ToArray ();
+		}
+
+		public MercurialRevision[] GetOutgoing (MercurialRepository repo, string remote)
+		{
+			List<MercurialRevision> revisions = new List<MercurialRevision> ();
+			
+			string logText = RunMercurialRepoCommand (repo.LocalBasePath, "commands.outgoing(repo.ui,repo,'{0}',style='xml')", remote);
+			
+			XmlDocument doc = new XmlDocument ();
+			try {
+				doc.LoadXml (logText);
+			} catch (XmlException xe) {
+				LoggingService.LogError ("Error getting outgoing for " + remote, xe);
+				return revisions.ToArray ();
+			}
+			
+			foreach (XmlNode node in doc.SelectNodes ("/log/logentry")) {
+				revisions.Add (NodeToRevision (repo, node));
+			}
+			
+			return revisions.ToArray ();
+		}
+
 		public override MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since)
 		{
 			localFile = NormalizePath (Path.GetFullPath (localFile));
