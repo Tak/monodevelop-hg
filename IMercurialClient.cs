@@ -170,6 +170,16 @@ namespace MonoDevelop.VersionControl.Mercurial
 		MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since);
 		
 		/// <summary>
+		/// Gets the incoming revisions for a given remote.
+		/// </summary>
+		MercurialRevision[] GetIncoming (MercurialRepository repo, string remote);
+		
+		/// <summary>
+		/// Gets the outgoing revisions for a given remote.
+		/// </summary>
+		MercurialRevision[] GetOutgoing (MercurialRepository repo, string remote);
+		
+		/// <summary>
 		/// Performs a merge of outstanding heads
 		/// </summary>
 		void Merge (MercurialRepository repository);

@@ -366,7 +366,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			*/
 		}
 		
-		public MercurialRevision[] GetIncoming (MercurialRepository repo, string remote)
+		public override MercurialRevision[] GetIncoming (MercurialRepository repo, string remote)
 		{
 			List<MercurialRevision> revisions = new List<MercurialRevision> ();
 			
@@ -387,7 +387,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return revisions.ToArray ();
 		}
 
-		public MercurialRevision[] GetOutgoing (MercurialRepository repo, string remote)
+		public override MercurialRevision[] GetOutgoing (MercurialRepository repo, string remote)
 		{
 			List<MercurialRevision> revisions = new List<MercurialRevision> ();
 			

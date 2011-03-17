@@ -130,6 +130,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return Mercurial.GetHistory (this, localFilePath.FullPath, since);
 		}
 		
+		public Revision[] GetIncoming (string remote) {
+			return Mercurial.GetIncoming (this, remote);
+		}
+		
+		public Revision[] GetOutgoing (string remote) {
+			return Mercurial.GetOutgoing (this, remote);
+		}
+		
 		public override VersionInfo GetVersionInfo (FilePath localPath, bool getRemoteStatus)
 		{
 			return statusCache[localPath] = Mercurial.GetVersionInfo (this, localPath.FullPath, getRemoteStatus);
