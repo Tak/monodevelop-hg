@@ -725,20 +725,19 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override Annotation[] GetAnnotations (string localPath)
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
-			string annotations = RunMercurialRepoCommand (localPath, "commands.annotate(repo.ui,repo,'{0}',user=True,number=True,rev='tip')", localPath);
+			string annotations = RunMercurialRepoCommand (localPath, "repo.ui.quiet=True\ncommands.annotate(repo.ui,repo,'{0}',user=True,number=True,date=True,rev='tip')", localPath);
 			
 			string[] lines = annotations.Split (new string[]{"\r","\n"}, StringSplitOptions.RemoveEmptyEntries);
 			string[] tokens;
-			char[] separators = new char[]{ ' ', '\t' };
+			char[] separators = new char[]{ ' ', '\t', ':' };
 			List<Annotation> result = new List<Annotation> ();
 			Annotation previous = new Annotation (string.Empty, string.Empty, DateTime.MinValue);
 			
 			foreach (string line in lines) {
 				tokens = line.Split (separators, StringSplitOptions.RemoveEmptyEntries);
-				if (1 < tokens.Length && !char.IsWhiteSpace (tokens[0][0]) && '|' != tokens[0][0]) {
+				if (2 < tokens.Length && !char.IsWhiteSpace (tokens[0][0]) && '|' != tokens[0][0]) {
 					previous = new Annotation (tokens[1], tokens[0],
-					           DateTime.MinValue); // FIXME
-					  // DateTime.ParseExact (tokens[2], "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture));
+						DateTime.ParseExact (tokens[2], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
 				}
 				result.Add (previous);
 			}
