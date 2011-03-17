@@ -231,6 +231,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 			MercurialRevision brev = (null == since)? new MercurialRevision (repo, MercurialRevision.FIRST): (MercurialRevision)since;
 			return Client.GetHistory (repo, localFile, brev);
 		}// GetHistory
+		
+		public Revision[] GetIncoming (MercurialRepository repo, string remote) {
+			return Client.GetIncoming (repo, remote);
+		}
+
+		public Revision[] GetOutgoing (MercurialRepository repo, string remote) {
+			return Client.GetOutgoing (repo, remote);
+		}
 
 		public void Merge (MercurialRepository repository) {
 			Client.Merge (repository);

@@ -124,6 +124,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract Annotation[] GetAnnotations (string localPath);
 		public abstract void Export (string localPath, string exportPath, IProgressMonitor monitor);
 		public abstract MercurialRevision[] GetHeads (MercurialRepository repository);
+		public abstract MercurialRevision[] GetIncoming (MercurialRepository repository, string remote);
+		public abstract MercurialRevision[] GetOutgoing (MercurialRepository repository, string remote);
 
 		#endregion 
 		
