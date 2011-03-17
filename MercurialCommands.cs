@@ -63,7 +63,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 		Uncommit,
 		Export,
 		Push,
-		Rebase
+		Rebase,
+		Incoming,
+		Outgoing
 	}
 
 	/// <summary>
@@ -484,6 +486,110 @@ namespace MonoDevelop.VersionControl.Mercurial
 		protected void UpdateExport(CommandInfo item) {
 			CanPull (item);
 		}// UpdateExport
+		
+		/// <summary>
+		/// Determines whether incoming changesets can be checked
+		/// </summary>
+		[CommandUpdateHandler (MercurialCommands.Incoming)]
+		protected void CanGetIncoming (CommandInfo item)
+		{
+			if (1 == GetItems ().Count) {
+				VersionControlItem vcitem = GetItems ()[0];
+				item.Visible = (vcitem.Repository is MercurialRepository);
+			} else { item.Visible = false; }
+		}// CanGetIncoming
+
+		/// <summary>
+		/// Lists incoming changesets
+		/// </summary>
+		[CommandHandler (MercurialCommands.Incoming)]
+		protected void OnGetIncoming()
+		{
+			VersionControlItem vcitem = GetItems ()[0];
+			MercurialRepository repo = ((MercurialRepository)vcitem.Repository);
+			Dictionary<string, BranchType> branches = repo.GetKnownBranches (vcitem.Path);
+			string   defaultBranch = string.Empty,
+			         localPath = vcitem.IsDirectory? (string)vcitem.Path.FullPath: Path.GetDirectoryName (vcitem.Path.FullPath);
+
+			foreach (KeyValuePair<string, BranchType> branch in branches) {
+				if (BranchType.Parent == branch.Value) {
+					defaultBranch = branch.Key;
+					break;
+				}
+			}// check for parent branch
+
+			Dialogs.BranchSelectionDialog bsd = new Dialogs.BranchSelectionDialog (branches.Keys, defaultBranch, localPath, false, false, false, false);
+			try {
+				if ((int)Gtk.ResponseType.Ok == bsd.Run ()) {
+					MercurialTask worker = new MercurialTask ();
+					worker.Description = string.Format ("Incoming from {0}", bsd.SelectedLocation);
+					worker.Operation = delegate {
+						repo.LocalBasePath = MercurialRepository.GetLocalBasePath (localPath);
+						Revision[] history = repo.GetIncoming (bsd.SelectedLocation);
+						DispatchService.GuiDispatch (() => {
+							var view = new MonoDevelop.VersionControl.Views.LogView (localPath, true, history, repo);
+							IdeApp.Workbench.OpenDocument (view, true);
+						});
+					};
+					worker.Start ();
+				}
+			} finally {
+				bsd.Destroy ();
+			}
+			
+		}// OnGetIncoming
+
+		/// <summary>
+		/// Determines whether outgoing changesets can be checked.
+		/// </summary>
+		[CommandUpdateHandler (MercurialCommands.Outgoing)]
+		protected void CanGetOutgoing (CommandInfo item)
+		{
+			if (1 == GetItems ().Count) {
+				VersionControlItem vcitem = GetItems ()[0];
+				item.Visible = (vcitem.Repository is MercurialRepository);
+			} else { item.Visible = false; }
+		}// CanGetOutgoing
+
+		/// <summary>
+		/// Lists outgoing changesets.
+		/// </summary>
+		[CommandHandler (MercurialCommands.Outgoing)]
+		protected void OnGetOutgoing()
+		{
+			VersionControlItem vcitem = GetItems ()[0];
+			MercurialRepository repo = ((MercurialRepository)vcitem.Repository);
+			Dictionary<string, BranchType> branches = repo.GetKnownBranches (vcitem.Path);
+			string   defaultBranch = string.Empty,
+			         localPath = vcitem.IsDirectory? (string)vcitem.Path.FullPath: Path.GetDirectoryName (vcitem.Path.FullPath);
+
+			foreach (KeyValuePair<string, BranchType> branch in branches) {
+				if (BranchType.Parent == branch.Value) {
+					defaultBranch = branch.Key;
+					break;
+				}
+			}// check for parent branch
+
+			Dialogs.BranchSelectionDialog bsd = new Dialogs.BranchSelectionDialog (branches.Keys, defaultBranch, localPath, false, false, false, false);
+			try {
+				if ((int)Gtk.ResponseType.Ok == bsd.Run ()) {
+					MercurialTask worker = new MercurialTask ();
+					worker.Description = string.Format ("Outgoing to {0}", bsd.SelectedLocation);
+					worker.Operation = delegate {
+						repo.LocalBasePath = MercurialRepository.GetLocalBasePath (localPath);
+						Revision[] history = repo.GetOutgoing (bsd.SelectedLocation);
+						DispatchService.GuiDispatch (() => {
+							var view = new MonoDevelop.VersionControl.Views.LogView (localPath, true, history, repo);
+							IdeApp.Workbench.OpenDocument (view, true);
+						});
+					};
+					worker.Start ();
+				}
+			} finally {
+				bsd.Destroy ();
+			}
+		}// OnGetOutgoing
+
 	}// MercurialCommandHandler
 
 	/// <summary>

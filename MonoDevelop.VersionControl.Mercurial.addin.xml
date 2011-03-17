@@ -35,9 +35,11 @@
 	<Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad/VersionControl">
 		<Condition id="ItemType" value="Project|WorkspaceItem">
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Resolve" insertafter="MonoDevelop.VersionControl.Commands.Revert" />
-			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" insertafter="MonoDevelop.VersionControl.Commands.Update" />
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Incoming" insertafter="MonoDevelop.VersionControl.Commands.Update" />
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Incoming" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Rebase" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Pull" />
-			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Rebase" />
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Outgoing" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Rebase" />
+			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Outgoing" />
 			<!--
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" />
@@ -106,5 +108,13 @@
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Export"
 			_label = "E_xport"
 			description = "Export to a directory or archive." />
+		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Incoming" 
+			_label = "I_ncoming"
+			icon = "vc-update" 
+			description = "Check for incoming changesets." />
+		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Outgoing" 
+			_label = "_Outgoing"
+			icon = "vc-commit" 
+			description = "Check for outgoing changesets." />
 	</Extension>
 </Addin>

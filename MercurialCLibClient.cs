@@ -369,12 +369,16 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override MercurialRevision[] GetIncoming (MercurialRepository repo, string remote)
 		{
 			List<MercurialRevision> revisions = new List<MercurialRevision> ();
+			if (string.IsNullOrEmpty (remote)) remote = "default";
 			
-			string logText = RunMercurialRepoCommand (repo.LocalBasePath, "commands.incoming(repo.ui,repo,'{0}',style='xml')", remote);
+			string logText = RunMercurialRepoCommand (repo.LocalBasePath, "commands.incoming(repo.ui,repo,source='{0}',bundle=None,force=False,style='xml')", remote);
+			int xmlIndex = logText.IndexOf ("<?xml");
+			
+			if (0 > xmlIndex) return revisions.ToArray ();
 			
 			XmlDocument doc = new XmlDocument ();
 			try {
-				doc.LoadXml (logText);
+				doc.LoadXml (logText.Substring (xmlIndex));
 			} catch (XmlException xe) {
 				LoggingService.LogError ("Error getting incoming for " + remote, xe);
 				return revisions.ToArray ();
@@ -390,12 +394,16 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override MercurialRevision[] GetOutgoing (MercurialRepository repo, string remote)
 		{
 			List<MercurialRevision> revisions = new List<MercurialRevision> ();
+			if (string.IsNullOrEmpty (remote)) remote = "default";
 			
-			string logText = RunMercurialRepoCommand (repo.LocalBasePath, "commands.outgoing(repo.ui,repo,'{0}',style='xml')", remote);
+			string logText = RunMercurialRepoCommand (repo.LocalBasePath, "commands.outgoing(repo.ui,repo,dest='{0}',style='xml')", remote);
+			int xmlIndex = logText.IndexOf ("<?xml");
+			
+			if (0 > xmlIndex) return revisions.ToArray ();
 			
 			XmlDocument doc = new XmlDocument ();
 			try {
-				doc.LoadXml (logText);
+				doc.LoadXml (logText.Substring (xmlIndex));
 			} catch (XmlException xe) {
 				LoggingService.LogError ("Error getting outgoing for " + remote, xe);
 				return revisions.ToArray ();
