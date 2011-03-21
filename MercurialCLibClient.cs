@@ -230,7 +230,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Add (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
-			RunMercurialRepoCommand (localPath, "commands.add (repo.ui, repo, os.path.realpath('{0}')", localPath);
+			RunMercurialRepoCommand (localPath, "commands.add (repo.ui, repo, os.path.realpath('{0}'))", localPath);
 		}
 
 		public override void Branch (string branchLocation, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
