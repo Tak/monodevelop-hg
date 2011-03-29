@@ -369,5 +369,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			return Client.CanRebase ();
 		}// CanRebase
+		
+		public RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision)
+		{
+			return Client.GetRevisionChanges (repo, revision);
+		}// GetRevisionChanges
 	}// MercurialVersionControl
 }

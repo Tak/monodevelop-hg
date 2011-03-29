@@ -27,12 +27,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			public readonly string Rev;
 			
-			// Overriding base property to allow public/asynchronous set
-			public new RevisionPath[] ChangedFiles {
-				get{ return base.ChangedFiles; }
-				set{ base.ChangedFiles = value; }
-			}
-			
 			public static readonly string HEAD = "tip";
 			public static readonly string FIRST = "0";
 			public static readonly string NONE = "NONE";
@@ -43,7 +37,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			public MercurialRevision (Repository repo, string rev, DateTime time, string author, string message, RevisionPath[] changedFiles)
-				: base (repo, time, author, message, changedFiles)
+				: base (repo, time, author, message)
 			{
 				Rev = rev;
 			}

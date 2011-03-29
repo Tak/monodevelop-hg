@@ -438,5 +438,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// Gets the heads of a given repository.
 		/// </summary>
 		MercurialRevision[] GetHeads (MercurialRepository repo);
+		
+		/// <summary>
+		/// Gets the changes for a specified revision.
+		/// </summary>
+		RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision);
 	}
 }

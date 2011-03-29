@@ -16,6 +16,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
 using System.Threading;
@@ -138,9 +139,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return Mercurial.GetOutgoing (this, remote);
 		}
 		
-		public override VersionInfo GetVersionInfo (FilePath localPath, bool getRemoteStatus)
+		protected override IEnumerable<VersionInfo> OnGetVersionInfo (IEnumerable<FilePath> localPaths, bool getRemoteStatus)
 		{
-			return statusCache[localPath] = Mercurial.GetVersionInfo (this, localPath.FullPath, getRemoteStatus);
+			return localPaths.Select (localPath => 
+				statusCache[localPath] = Mercurial.GetVersionInfo (this, localPath.FullPath, getRemoteStatus)
+			);
 		}
 		
 		/// <summary>
@@ -156,8 +159,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			return status;
 		}
-
-		public override VersionInfo[] GetDirectoryVersionInfo (FilePath localDirectory, bool getRemoteStatus, bool recursive)
+		
+		protected override VersionInfo[] OnGetDirectoryVersionInfo (FilePath localDirectory, bool getRemoteStatus, bool recursive)
 		{
 			VersionInfo[] versions = Mercurial.GetDirectoryVersionInfo (this, localDirectory.FullPath, getRemoteStatus, recursive);
 			if (null != versions) {
@@ -167,6 +170,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			return versions;
 		}
+
+		protected override RevisionPath[] OnGetRevisionChanges (Revision revision)
+		{
+			return Mercurial.GetRevisionChanges (this, (MercurialRevision)revision);
+		}		
 		
 		// Deprecated
 		public override Repository Publish (string serverPath, FilePath localPath, FilePath[] files, string message, IProgressMonitor monitor)
@@ -272,25 +280,42 @@ namespace MonoDevelop.VersionControl.Mercurial
 //			string localPathStr = localPath.FullPath;
 //			Mercurial.Merge (localPathStr, localPathStr, false, true, brev, (MercurialRevision)(brev.GetPrevious ()), monitor);
 		}
-
-		public override bool IsVersioned (FilePath localPath)
-		{
+		
+		internal bool IsVersioned (FilePath localPath) {
 			if (string.IsNullOrEmpty (GetLocalBasePath (localPath.FullPath))) {
 				return false;
-			} 
+			}
 			
 			VersionInfo info = GetCachedVersionInfo (localPath, false);
 			return (null != info && info.IsVersioned);
 		}
-
-		public override bool IsModified (FilePath localFile)
+		
+		internal bool IsModified (FilePath localFile)
 		{
 			if (string.IsNullOrEmpty (GetLocalBasePath (localFile.FullPath))) {
-				return false;
+			return false;
 			}
-			
+	
 			VersionInfo info = GetCachedVersionInfo (localFile, false);
 			return (null != info && info.IsVersioned && info.HasLocalChanges);
+		}
+		
+		protected override VersionControlOperation GetSupportedOperations (VersionInfo vinfo)
+		{
+			VersionControlOperation operations = VersionControlOperation.None;
+			bool exists = !vinfo.LocalPath.IsNullOrEmpty && (File.Exists (vinfo.LocalPath) || Directory.Exists (vinfo.LocalPath));
+			if (vinfo.IsVersioned) {
+				if (exists) {
+					operations = VersionControlOperation.Update | VersionControlOperation.Log | VersionControlOperation.Remove | VersionControlOperation.Annotate;
+					if (vinfo.HasLocalChanges || vinfo.IsDirectory)
+						operations |= VersionControlOperation.Revert | VersionControlOperation.Commit;
+					if ((vinfo.Status & VersionStatus.Conflicted) == VersionStatus.Conflicted)
+						operations |= VersionControlOperation.Revert;
+				}
+			} else if (exists) {
+				operations = VersionControlOperation.Add;
+			}
+			return operations;
 		}
 
 		public virtual bool IsConflicted (FilePath localFile)
@@ -303,22 +328,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return (null != info && info.IsVersioned && (0 != (info.Status & VersionStatus.Conflicted)));
 		}
 
-		public override bool CanRevert (FilePath localPath)
-		{
-			return IsModified (localPath) || IsConflicted (localPath);
-		}
-
-		public override bool CanCommit (FilePath localPath)
-		{
-			bool rv = IsModified (localPath);
-			return rv;
-		}
-
-		public override bool CanAdd (FilePath localPath)
-		{
-			return !IsVersioned (localPath);
-		}
-
 		public virtual bool CanResolve (FilePath localPath)
 		{
 			return IsConflicted (localPath);
@@ -326,7 +335,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public virtual bool CanPull (FilePath localPath)
 		{
-			return Directory.Exists (localPath.FullPath) && base.CanUpdate (localPath);
+			return Directory.Exists (localPath.FullPath) && IsVersioned (localPath);
 		}// CanPull
 
 		public virtual bool CanMerge (FilePath localPath)
@@ -348,21 +357,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			return Directory.Exists (localPath.FullPath) && IsVersioned (localPath);
 		}// CanUncommit
-		
-		public override bool CanGetAnnotations (MonoDevelop.Core.FilePath localPath)
-		{
-		    return IsVersioned (localPath);
-		}// CanGetAnnotations
-		
-		public override bool CanUpdate (FilePath localPath)
-		{
-			return IsVersioned (localPath);
-		}
-
-		public override bool CanRemove (MonoDevelop.Core.FilePath localPath)
-		{
-		    return IsVersioned (localPath);
-		}
 		
 		/// <summary>
 		/// Finds the repository root for a path

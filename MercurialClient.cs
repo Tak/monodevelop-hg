@@ -126,6 +126,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract MercurialRevision[] GetHeads (MercurialRepository repository);
 		public abstract MercurialRevision[] GetIncoming (MercurialRepository repository, string remote);
 		public abstract MercurialRevision[] GetOutgoing (MercurialRepository repository, string remote);
+		public abstract RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision);
 
 		#endregion 
 		
