@@ -441,20 +441,19 @@ namespace MonoDevelop.VersionControl.Mercurial
 				revisions.Add (NodeToRevision (repo, node));
 			}
 			
-			ThreadPool.QueueUserWorkItem (delegate {
-				string basePath = MercurialRepository.GetLocalBasePath (localFile);
-				foreach (MercurialRevision rev in revisions) {
-					List<RevisionPath> paths = new List<RevisionPath> ();
-					foreach (LocalStatus status in Status (basePath, rev)
-					         .Where (s => s.Status != ItemStatus.Unchanged && s.Status != ItemStatus.Unversioned)) {
-						paths.Add (new RevisionPath (status.Filename, ConvertAction (status.Status), status.Status.ToString ()));
-					}
-					rev.ChangedFiles = paths.ToArray ();
-				}
-			});
-			
 			return revisions.ToArray ();
 		}// GetHistory
+		
+		public override RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision)
+		{
+			List<RevisionPath> paths = new List<RevisionPath> ();
+			foreach (LocalStatus status in Status (repo.LocalBasePath, revision)
+			         .Where (s => s.Status != ItemStatus.Unchanged && s.Status != ItemStatus.Unversioned)) {
+				paths.Add (new RevisionPath (status.Filename, ConvertAction (status.Status), status.Status.ToString ()));
+			}
+			
+			return paths.ToArray ();
+		}
 		
 		public override MercurialRevision[] GetHeads (MercurialRepository repo)
 		{
@@ -625,8 +624,14 @@ namespace MonoDevelop.VersionControl.Mercurial
 				rev = string.Format (",change={0}", revision.Rev);
 			}
 			
-			string statusText = RunMercurialRepoCommand (path, "commands.status(repo.ui,repo,os.path.realpath('{0}'),all=True{1})\n", path, rev);
-			// Console.WriteLine (statusText);
+			string statusText = string.Empty;
+			
+			try {
+				statusText = RunMercurialRepoCommand (path, "commands.status(repo.ui,repo,os.path.realpath('{0}'),all=True{1})\n", path, rev);
+			} catch (MercurialClientException) {
+				// TODO: This happens on incoming/outgoing - handle this in a better way
+				LoggingService.LogWarning ("Error getting status for {0} at {1}", path, revision.Rev);
+			}
 			
 			foreach (string line in statusText.Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
 				string[] tokens = line.Split (new[]{' '}, 2);
