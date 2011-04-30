@@ -291,7 +291,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 			
 			if (!(0 == files.Count || (1 == files.Count && string.Empty.Equals (files[0], StringComparison.Ordinal)))) {
-				pyfiles = string.Format ("','.join([{0}]),", string.Join (",", files.ToArray ()));
+				pyfiles = string.Format ("{0},", string.Join (",", files.ToArray ()));
 			}
 			
 			try {
@@ -784,7 +784,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override Annotation[] GetAnnotations (string localPath)
 		{
 			localPath = NormalizePath (Path.GetFullPath (localPath));
-			string annotations = RunMercurialRepoCommand (localPath, "repo.ui.quiet=True\ncommands.annotate(repo.ui,repo,repo,os.path.realpath('{0}'),user=True,number=True,date=True,rev='tip')", localPath);
+			string annotations = RunMercurialRepoCommand (localPath, "repo.ui.quiet=True\ncommands.annotate(repo.ui,repo,os.path.realpath('{0}'),user=True,number=True,date=True,rev='tip')", localPath);
 			string[] lines = annotations.Split (new string[]{"\r","\n"}, StringSplitOptions.RemoveEmptyEntries);
 			string[] tokens;
 			char[] separators = new char[]{ ' ', '\t', ':' };
