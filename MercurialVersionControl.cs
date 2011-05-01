@@ -264,7 +264,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			if (Client.IsMergePending (changeSet.BaseLocalPath.FullPath)) {
 				int result = (int)ResponseType.Cancel;
 				MonoDevelop.Ide.DispatchService.GuiSyncDispatch(delegate{ 
-					MessageDialog warningDialog = new MessageDialog (null, DialogFlags.Modal, MessageType.Warning, ButtonsType.OkCancel, 
+					MessageDialog warningDialog = new MessageDialog (MonoDevelop.Ide.IdeApp.Workbench.RootWindow, DialogFlags.Modal, MessageType.Warning, ButtonsType.OkCancel, 
 					                   GettextCatalog.GetString ("Because there are merges pending, all pending changes must be committed together. Proceed?"));
 					result = warningDialog.Run ();
 					warningDialog.Destroy ();

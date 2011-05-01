@@ -420,7 +420,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			         localPath = vcitem.IsDirectory? (string)vcitem.Path.FullPath: Path.GetDirectoryName (vcitem.Path.FullPath);
 			         
 			if (repo.IsModified (MercurialRepository.GetLocalBasePath (vcitem.Path.FullPath))) {
-				MessageDialog md = new MessageDialog (null, DialogFlags.Modal, 
+				MessageDialog md = new MessageDialog (MonoDevelop.Ide.IdeApp.Workbench.RootWindow, DialogFlags.Modal, 
 				                                      MessageType.Question, ButtonsType.YesNo, 
 				                                      GettextCatalog.GetString ("You have uncommitted local changes. Push anyway?"));
 				try {

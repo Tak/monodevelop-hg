@@ -245,7 +245,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void RevertToRevision (FilePath localPath, Revision revision, IProgressMonitor monitor)
 		{
 			if (IsModified (MercurialRepository.GetLocalBasePath (localPath))) {
-				MessageDialog md = new MessageDialog (null, DialogFlags.Modal, 
+				MessageDialog md = new MessageDialog (MonoDevelop.Ide.IdeApp.Workbench.RootWindow, DialogFlags.Modal, 
 				                                      MessageType.Question, ButtonsType.YesNo, 
 				                                      GettextCatalog.GetString ("You have uncommitted local changes. Revert anyway?"));
 				try {
@@ -442,7 +442,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			if (IsModified (localPath)) {
 				MonoDevelop.Ide.DispatchService.GuiSyncDispatch(delegate{ 
-					new MessageDialog (null, DialogFlags.Modal, MessageType.Warning, ButtonsType.Close,
+					new MessageDialog (MonoDevelop.Ide.IdeApp.Workbench.RootWindow, DialogFlags.Modal, MessageType.Warning, ButtonsType.Close,
 					                   "There are uncommitted changed in the working copy. Aborting...").ShowAll ();
 				});
 			} else {

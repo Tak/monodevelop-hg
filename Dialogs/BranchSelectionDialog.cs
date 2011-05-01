@@ -70,6 +70,7 @@ namespace MonoDevelop.VersionControl.Mercurial.Dialogs
 		{
 			this.Build();
 
+			Parent = MonoDevelop.Ide.IdeApp.Workbench.RootWindow;
 			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
 			textRenderer.Editable = true;
 			textRenderer.Edited += delegate(object o, EditedArgs args) {
