@@ -836,7 +836,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
 			string output = RunMercurialRepoCommand (localPath, "commands.pull(repo.ui,repo,'{0}',update=True,rebase=True)", mergeLocation);
 			monitor.Log.WriteLine (output);
-			monitor.Log.WriteLine ("Pulled to {0}", localPath);
+			monitor.Log.WriteLine ("Rebased {0} onto {1}", localPath, mergeLocation);
 		}// Rebase
 		 
 		/// <summary>
