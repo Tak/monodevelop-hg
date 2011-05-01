@@ -9,11 +9,13 @@
     <widget-library name="../../../../github-repo/monodevelop/main/build/bin/MonoDevelop.Ide.dll" />
     <widget-library name="../bin/Debug/MonoDevelop.VersionControl.Mercurial.dll" internal="true" />
   </import>
-  <widget class="Gtk.Dialog" id="MonoDevelop.VersionControl.Mercurial.Dialogs.BranchSelectionDialog" design-size="400 257">
+  <widget class="Gtk.Dialog" id="MonoDevelop.VersionControl.Mercurial.Dialogs.BranchSelectionDialog" design-size="808 508">
     <property name="MemberName">branchSelectionDialog</property>
+    <property name="WidthRequest">800</property>
+    <property name="HeightRequest">480</property>
     <property name="CanFocus">True</property>
     <property name="Title" translatable="yes">Choose a Branch</property>
-    <property name="WindowPosition">CenterOnParent</property>
+    <property name="WindowPosition">Center</property>
     <property name="Modal">True</property>
     <property name="Buttons">2</property>
     <property name="HelpButton">False</property>
