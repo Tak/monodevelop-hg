@@ -493,7 +493,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			foreach (string remote in RunMercurialRepoCommand (path, "commands.paths(repo.ui, repo)")
 			         .Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
 				string[] tokens = remote.Split (new[]{'='}, 2);
-				branches.Add (tokens[0].Trim (), BranchType.Public);
+				branches.Add (tokens[1].Trim (), BranchType.Public);
 			}
 			
 			return branches;
