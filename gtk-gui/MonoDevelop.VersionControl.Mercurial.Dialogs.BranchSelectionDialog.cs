@@ -19,10 +19,12 @@ namespace MonoDevelop.VersionControl.Mercurial.Dialogs
 		{
 			global::Stetic.Gui.Initialize (this);
 			// Widget MonoDevelop.VersionControl.Mercurial.Dialogs.BranchSelectionDialog
+			this.WidthRequest = 800;
+			this.HeightRequest = 480;
 			this.CanFocus = true;
 			this.Name = "MonoDevelop.VersionControl.Mercurial.Dialogs.BranchSelectionDialog";
 			this.Title = global::Mono.Unix.Catalog.GetString ("Choose a Branch");
-			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
+			this.WindowPosition = ((global::Gtk.WindowPosition)(1));
 			this.Modal = true;
 			// Internal child MonoDevelop.VersionControl.Mercurial.Dialogs.BranchSelectionDialog.VBox
 			global::Gtk.VBox w1 = this.VBox;
@@ -131,8 +133,8 @@ namespace MonoDevelop.VersionControl.Mercurial.Dialogs
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
-			this.DefaultWidth = 400;
-			this.DefaultHeight = 257;
+			this.DefaultWidth = 808;
+			this.DefaultHeight = 508;
 			this.omitCB.Hide ();
 			this.Show ();
 			this.omitCB.Toggled += new global::System.EventHandler (this.OnOmitCBToggled);
