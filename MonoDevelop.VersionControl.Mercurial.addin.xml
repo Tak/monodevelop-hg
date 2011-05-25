@@ -3,7 +3,7 @@
        name      = "Mercurial support for the Version Control Addin"
        author    = "Levi Bard"
        copyright = "GPL"
-       url       = ""
+       url       = "https://code.launchpad.net/~taktaktaktaktaktaktaktaktaktak/+junk/monodevelop-hg"
        description = "Mercurial support for the Version Control Addin"
        category    = "Version Control"
        version   = "2.6.0">
