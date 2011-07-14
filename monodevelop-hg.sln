@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monodevelop-hg", "monodevelop-hg.csproj", "{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mercurial", "Mercurial\Mercurial\Mercurial.csproj", "{FADE5BAA-E0A3-4B05-A121-CD33A90A76A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,12 +15,17 @@ Global
 		{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FADE5BAA-E0A3-4B05-A121-CD33A90A76A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FADE5BAA-E0A3-4B05-A121-CD33A90A76A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FADE5BAA-E0A3-4B05-A121-CD33A90A76A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FADE5BAA-E0A3-4B05-A121-CD33A90A76A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = monodevelop-hg.csproj
 		Policies = $0
 		$0.StandardHeader = $1
-		$1.inheritsSet = GPLv2License
+		$1.Text = @\n ${FileName}\n \n Author:\n      ${AuthorName} <${AuthorEmail}>\n\n Copyright (c) ${Year} ${CopyrightHolder}\n\n This program is free software; you can redistribute it and/or modify\n it under the terms of the GNU General Public License as published by\n the Free Software Foundation; either version 2 of the License, or\n (at your option) any later version.\n\n This program is distributed in the hope that it will be useful,\n but WITHOUT ANY WARRANTY; without even the implied warranty of\n MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n GNU General Public License for more details.\n \n You should have received a copy of the GNU General Public License\n along with this program; if not, write to the Free Software\n Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA\n
+		$1.IncludeInNewFiles = True
 		name = monodevelop-hg
 	EndGlobalSection
 EndGlobal

@@ -193,7 +193,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}
 		}// static constructor
 		
-		public MercurialCLibClient()
+		public MercurialCLibClient ()
+		{
+		}
+		
+		public override void Dispose ()
 		{
 		}
 		
@@ -229,13 +233,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 		// TODO: Recurse not supported
 		public override void Add (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			localPath = NormalizePath (Path.GetFullPath (localPath));
+			localPath = NormalizePath (localPath);
 			RunMercurialRepoCommand (localPath, "commands.add (repo.ui, repo, os.path.realpath('{0}'))", localPath);
 		}
 
 		public override void Branch (string branchLocation, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			localPath = NormalizePath (Path.GetFullPath (localPath));
+			localPath = NormalizePath (localPath);
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
 			
 			string output = RunMercurialCommand ("commands.clone(myui,'{0}','{1}')", branchLocation, localPath);
@@ -307,11 +311,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override DiffInfo[] Diff (string basePath, string[] files)
 		{
 			List<DiffInfo> results = new List<DiffInfo> ();
-			basePath = NormalizePath (Path.GetFullPath (basePath));
+			basePath = NormalizePath (basePath);
 			
 			if (null == files || 0 == files.Length) {
 				if (Directory.Exists (basePath)) {
-					IList<LocalStatus> statuses = Status (basePath, new MercurialRevision (null, MercurialRevision.HEAD));
+					IEnumerable<LocalStatus> statuses = Status (basePath, new MercurialRevision (null, MercurialRevision.HEAD));
 					List<string> foundFiles = new List<string> ();
 					foreach (LocalStatus status in statuses) {
 						if (ItemStatus.Unchanged != status.Status && ItemStatus.Unversioned != status.Status) {
@@ -336,7 +340,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override DiffInfo[] Diff (string path, MercurialRevision fromRevision, MercurialRevision toRevision)
 		{
 			// Need history for this
-			path = NormalizePath (Path.GetFullPath (path));
+			path = NormalizePath (path);
 			return new[]{ new DiffInfo (GetLocalBasePath (path), path, 
 			                  RunMercurialRepoCommand (path, "commands.diff(repo.ui,repo,os.path.realpath('{2}'),rev='{0}:{1}')", fromRevision.Rev, toRevision.Rev, path))
 			};
@@ -424,8 +428,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override MercurialRevision[] GetHistory (MercurialRepository repo, string localFile, MercurialRevision since)
 		{
-			localFile = NormalizePath (Path.GetFullPath (localFile));
-			string revText = ",rev=None"; // FIXME: string.Format (",rev='-1:{0}'", since.Rev);
+			localFile = NormalizePath (localFile);
 			List<MercurialRevision> revisions = new List<MercurialRevision> ();
 			string logText = RunMercurialRepoCommand (localFile, "commands.log(repo.ui,repo,os.path.realpath('{0}'),date=None,user=None{1},style='xml')", localFile, ",rev=None");
 			
@@ -457,7 +460,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public override MercurialRevision[] GetHeads (MercurialRepository repo)
 		{
-			string localPath = NormalizePath (Path.GetFullPath (repo.LocalBasePath));
+			string localPath = NormalizePath (repo.LocalBasePath);
 			string logText = RunMercurialRepoCommand (localPath, "commands.heads(repo.ui,repo,style='xml')", localPath);
 			List<MercurialRevision> revisions = new List<MercurialRevision> ();
 			
@@ -489,7 +492,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			// TODO: Test more thoroughly with remote repos
 			var branches = new System.Collections.Generic.Dictionary<string,BranchType> ();
-			path = NormalizePath (Path.GetFullPath (path));
+			path = NormalizePath (path);
 			foreach (string remote in RunMercurialRepoCommand (path, "commands.paths(repo.ui, repo)")
 			         .Split (new[]{'\r','\n'}, StringSplitOptions.RemoveEmptyEntries)) {
 				string[] tokens = remote.Split (new[]{'='}, 2);
@@ -514,7 +517,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override string GetTextAtRevision (string path, MercurialRevision rev)
 		{
-			path = NormalizePath (Path.GetFullPath (path));
+			path = NormalizePath (path);
 			string tempfile = Path.GetTempFileName ();
 			RunMercurialRepoCommand (path, "commands.cat(repo.ui,repo,os.path.realpath('{0}'),rev='{1}',output='{2}')", path, rev.Rev, tempfile);
 			return File.ReadAllText (tempfile);
@@ -561,13 +564,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Merge (MercurialRepository repository)
 		{
-			string localPath = NormalizePath (Path.GetFullPath (repository.LocalBasePath));
+			string localPath = NormalizePath (repository.LocalBasePath);
 			RunMercurialRepoCommand (localPath, "commands.merge(repo.ui,repo)");
 		}
 
 		public override void Pull (string pullLocation, string localPath, bool remember, bool overwrite, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			localPath = NormalizePath (Path.GetFullPath (localPath));
+			localPath = NormalizePath (localPath);
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
 			string output = RunMercurialRepoCommand (localPath, "commands.pull(repo.ui,repo,'{0}',update=True)", pullLocation);
 			monitor.Log.WriteLine (output);
@@ -576,7 +579,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Push (string pushLocation, string localPath, bool remember, bool overwrite, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			localPath = NormalizePath (Path.GetFullPath (localPath));
+			localPath = NormalizePath (localPath);
 			if (null == monitor){ monitor = new MonoDevelop.Core.ProgressMonitoring.NullProgressMonitor (); }
 			string output = RunMercurialRepoCommand (localPath, "commands.push(repo.ui,repo,dest='{0}',force={1})", pushLocation, overwrite? "True": "False");
 			monitor.Log.WriteLine (output);
@@ -585,20 +588,20 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Remove (string path, bool force, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			path = NormalizePath (Path.GetFullPath (path));
+			path = NormalizePath (path);
 			RunMercurialRepoCommand (path, "commands.remove(repo.ui,repo,os.path.realpath('{0}'),force={1})", path, force? "True": "False");
 		}
 
 		public override void Resolve (string path, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			path = NormalizePath (Path.GetFullPath (path));
+			path = NormalizePath (path);
 			RunMercurialRepoCommand (path, "commands.resolve(repo.ui,repo,os.path.realpath('{0}'),mark=True)", path);
 		}
 
 		public override void Revert (string localPath, bool recurse, MonoDevelop.Core.IProgressMonitor monitor, MercurialRevision toRevision)
 		{
 			string rev = string.Empty;
-			localPath = NormalizePath (Path.GetFullPath (localPath));
+			localPath = NormalizePath (localPath);
 			if (null != toRevision && MercurialRevision.HEAD != toRevision.Rev && MercurialRevision.NONE != toRevision.Rev) {
 				rev = string.Format (",rev='{0}',date=None", toRevision.Rev);
 			} else {
@@ -608,7 +611,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			RunMercurialRepoCommand (localPath, "commands.revert(repo.ui,repo,os.path.realpath('{0}'){1})", localPath, rev);
 		}
 
-		public override System.Collections.Generic.IList<LocalStatus> Status (string path, MercurialRevision revision)
+		public override System.Collections.Generic.IEnumerable<LocalStatus> Status (string path, MercurialRevision revision)
 		{
 			List<LocalStatus> statuses = new List<LocalStatus> ();
 			string rev = string.Empty;
@@ -618,7 +621,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			bool modified = false;
 			
 					
-			path = NormalizePath (Path.GetFullPath (path).Replace ("{", "{{").Replace ("}", "}}"));// escape for string.format
+			path = NormalizePath (Path.GetFullPath (path).Replace ("{", "{{").Replace ("}", "}}"), false);// escape for string.format
 			
 			if (null != revision && MercurialRevision.HEAD != revision.Rev && MercurialRevision.NONE != revision.Rev) {
 				rev = string.Format (",change={0}", revision.Rev);
@@ -637,7 +640,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 				string[] tokens = line.Split (new[]{' '}, 2);
 				itemStatus = (ItemStatus)tokens[0][0];
 				// Console.WriteLine ("Got status {0} for path {1}", tokens[0], tokens[1]);
-				tmp = new LocalStatus (string.Empty, Path.GetFullPath (NormalizePath (tokens[1])), itemStatus);
+				tmp = new LocalStatus (string.Empty, NormalizePath (tokens[1]), itemStatus);
 				statuses.Add (tmp);
 				if (itemStatus != ItemStatus.Ignored && itemStatus != ItemStatus.Unversioned && itemStatus != ItemStatus.Unchanged) {
 					modified = true;
@@ -839,22 +842,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			monitor.Log.WriteLine ("Rebased {0} onto {1}", localPath, mergeLocation);
 		}// Rebase
 		 
-		/// <summary>
-		/// Normalize a local file path (primarily for windows)
-		/// </summary>
-		static string NormalizePath (string path)
-		{
-			string normalizedPath = path;
-			
-			if (PropertyService.IsWindows && 
-			    !string.IsNullOrEmpty (normalizedPath) &&
-			    normalizedPath.Trim().EndsWith (Path.DirectorySeparatorChar.ToString (), StringComparison.Ordinal)) {
-				normalizedPath = normalizedPath.Trim().Remove (normalizedPath.Length-1);
-			}// strip trailing backslash
-			
-			return normalizedPath;
-		}// NormalizePath
-		
 		/* WIP
 		public MercurialRevision[] GetHeads (string localPath)
 		{

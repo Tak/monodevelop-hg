@@ -16,13 +16,14 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 using MonoDevelop.Core;
 
 namespace MonoDevelop.VersionControl.Mercurial
 {
-	public abstract class MercurialClient: IMercurialClient
+	public abstract class MercurialClient: IMercurialClient, IDisposable
 	{
 		/// <summary>
 		/// Stores descriptions of list kinds
@@ -75,16 +76,16 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public virtual bool IsVersioned (string path)
 		{
 			try {
-				IList<LocalStatus> statuses = Status (path, null);
+				IEnumerable<LocalStatus> statuses = Status (path, null);
 				// System.Console.WriteLine ("IsVersioned: Got back {0} statuses for {1}", statuses.Count, path);
 				// if (0 < statuses.Count){ System.Console.WriteLine ("{0} {1}", Path.GetFullPath (path), statuses[0].Filename); }
-				if (1 != statuses.Count || 
-				!Path.GetFullPath (path).EndsWith (statuses[0].Filename)) {
+				if (1 != statuses.Count () || 
+				!Path.GetFullPath (path).EndsWith (statuses.First ().Filename)) {
 					return true;
 				}// versioned directory
 
 				// System.Console.WriteLine ("Status: {0}", statuses[0].Status);
-				return statuses[0].Status != ItemStatus.Unversioned;
+				return statuses.First ().Status != ItemStatus.Unversioned;
 			} catch (MercurialClientException mce) {
 				LoggingService.LogWarning (string.Format ("Error checking whether {0} is versioned", path), mce);
 			}
@@ -94,7 +95,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public abstract string Version{ get; }
 		public abstract IList<string> List (string path, bool recurse, ListKind kind);
-		public abstract IList<LocalStatus> Status (string path, MercurialRevision revision);
+		public abstract IEnumerable<LocalStatus> Status (string path, MercurialRevision revision);
 		// public abstract string GetPathUrl (string path);
 		public abstract void Update (string localPath, bool recurse, IProgressMonitor monitor);
 		public abstract void Revert (string localPath, bool recurse, IProgressMonitor monitor, MercurialRevision toRevision);
@@ -126,9 +127,22 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract MercurialRevision[] GetHeads (MercurialRepository repository);
 		public abstract MercurialRevision[] GetIncoming (MercurialRepository repository, string remote);
 		public abstract MercurialRevision[] GetOutgoing (MercurialRepository repository, string remote);
-		public abstract RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision);
+		// public abstract RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision);
+		public virtual RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision)
+		{
+			List<RevisionPath> paths = new List<RevisionPath> ();
+			foreach (LocalStatus status in Status (repo.LocalBasePath, revision)
+			         .Where (s => s.Status != ItemStatus.Unchanged && s.Status != ItemStatus.Unversioned)) {
+				paths.Add (new RevisionPath (Path.Combine (repo.LocalBasePath, status.Filename), ConvertAction (status.Status), status.Status.ToString ()));
+			}
+			
+			return paths.ToArray ();
+		}
+		
 
 		#endregion 
+		
+		public abstract void Dispose ();
 		
 //		public static string ListKindToString (ListKind kind) {
 //			switch (kind) {
@@ -199,6 +213,32 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public abstract bool IsMergePending (string localPath);
 		public abstract bool CanRebase ();
+		
+		/// <summary>
+		/// Normalize a local file path (primarily for windows)
+		/// </summary>
+		internal static string NormalizePath (string path)
+		{
+			return NormalizePath (path, true);
+		}
+
+		/// <summary>
+		/// Normalize a local file path (primarily for windows)
+		/// </summary>
+		internal static string NormalizePath (string path, bool useFullPath)
+		{
+			string normalizedPath = path;
+			if (useFullPath)
+				normalizedPath = Path.GetFullPath (path);
+			
+			if (PropertyService.IsWindows && 
+			    !string.IsNullOrEmpty (normalizedPath) &&
+			    normalizedPath.Trim ().EndsWith (Path.DirectorySeparatorChar.ToString (), StringComparison.Ordinal)) {
+				normalizedPath = normalizedPath.Trim ().Remove (normalizedPath.Length - 1);
+			}// strip trailing backslash
+			
+			return normalizedPath;
+		}// NormalizePath
 	}
 
 	public class LocalStatus {
