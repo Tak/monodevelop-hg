@@ -56,7 +56,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// <returns>
 		/// A <see cref="IList`1"/>: The list of statuses applying to that path
 		/// </returns>
-		IList<LocalStatus> Status (string path, MercurialRevision revision);
+		IEnumerable<LocalStatus> Status (string path, MercurialRevision revision);
 
 		/// <summary>
 		/// Checks whether a path is versioned

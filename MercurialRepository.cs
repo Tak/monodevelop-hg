@@ -31,7 +31,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 	{
 		private Dictionary<string,string> tempfiles;
 		private Dictionary<FilePath,VersionInfo> statusCache;
-
+		internal MercurialClient Client{ get; private set; }
 
 		public override string[] SupportedProtocols {
 			get { return MercurialVersionControl.protocols; }
@@ -46,6 +46,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			Init ();
 			Url = url;
+			Client = new MercurialCommandClient (new Uri (url).AbsolutePath, null);
 		}
 
 		private void Init ()
@@ -78,7 +79,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 				// System.Console.WriteLine ("Getting children for {0}", Url);
 				
-				foreach (string directory in Mercurial.List (Url, true, ListKind.Directory)) {
+				foreach (string directory in Client.List (Url, true, ListKind.Directory)) {
 					int lastSep = directory.LastIndexOf ("/");
 					if (0 < lastSep && Url.EndsWith (directory.Substring (0, lastSep))) {
 						repos.Add (new MercurialRepository (Mercurial, directory));
@@ -113,7 +114,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			string localFile = localFilePath.FullPath;
 
 			try {
-				return Mercurial.GetTextAtRevision (localFile, new MercurialRevision (this, MercurialRevision.HEAD));
+				return Client.GetTextAtRevision (localFile, new MercurialRevision (this, MercurialRevision.HEAD));
 			} catch (Exception e) {
 				LoggingService.LogError ("Error getting base text", e);
 			}
@@ -128,21 +129,21 @@ namespace MonoDevelop.VersionControl.Mercurial
 				LocalBasePath = GetLocalBasePath (localFilePath.FullPath);
 				// System.Console.WriteLine ("Got base path {0}", LocalBasePath);
 			}
-			return Mercurial.GetHistory (this, localFilePath.FullPath, since);
+			return Client.GetHistory (this, localFilePath.FullPath, (MercurialRevision)since);
 		}
 		
 		public Revision[] GetIncoming (string remote) {
-			return Mercurial.GetIncoming (this, remote);
+			return Client.GetIncoming (this, remote);
 		}
 		
 		public Revision[] GetOutgoing (string remote) {
-			return Mercurial.GetOutgoing (this, remote);
+			return Client.GetOutgoing (this, remote);
 		}
 		
 		protected override IEnumerable<VersionInfo> OnGetVersionInfo (IEnumerable<FilePath> localPaths, bool getRemoteStatus)
 		{
 			return localPaths.Select (localPath => 
-				statusCache[localPath] = Mercurial.GetVersionInfo (this, localPath.FullPath, getRemoteStatus)
+				statusCache[localPath] = GetVersionInfo (this, localPath.FullPath, getRemoteStatus)
 			);
 		}
 		
@@ -162,7 +163,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		protected override VersionInfo[] OnGetDirectoryVersionInfo (FilePath localDirectory, bool getRemoteStatus, bool recursive)
 		{
-			VersionInfo[] versions = Mercurial.GetDirectoryVersionInfo (this, localDirectory.FullPath, getRemoteStatus, recursive);
+			VersionInfo[] versions = GetDirectoryVersionInfo (this, localDirectory.FullPath, getRemoteStatus, recursive);
 			if (null != versions) {
 				foreach (VersionInfo version in versions) {
 					statusCache[version.LocalPath] = version;
@@ -173,7 +174,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		protected override RevisionPath[] OnGetRevisionChanges (Revision revision)
 		{
-			return Mercurial.GetRevisionChanges (this, (MercurialRevision)revision);
+			return Client.GetRevisionChanges (this, (MercurialRevision)revision);
 		}		
 		
 		// Deprecated
@@ -181,65 +182,64 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			serverPath = string.Format ("{0}{1}{2}", Url, Url.EndsWith ("/")? string.Empty: "/", serverPath);
 			// System.Console.WriteLine ("Got publish {0} {1}", serverPath, localPath);
-			Mercurial.StoreCredentials (serverPath);
-			Mercurial.Push (serverPath, localPath.FullPath, false, false, false, monitor);
+			Client.StoreCredentials (serverPath);
+			Client.Push  (serverPath, localPath.FullPath, false, false, monitor);
 			return new MercurialRepository (Mercurial, serverPath);
 		}
 		
 		public virtual void Push (string pushLocation, FilePath localPath, bool remember, bool overwrite, bool omitHistory, IProgressMonitor monitor) {
-			Mercurial.StoreCredentials (pushLocation);
-			Mercurial.Push (pushLocation, localPath.FullPath, remember, overwrite, omitHistory, monitor);
+			Client.StoreCredentials (pushLocation);
+			Client.Push (pushLocation, localPath.FullPath, remember, overwrite, monitor);
 		}// Push
 
 		public virtual void Pull (string pullLocation, FilePath localPath, bool remember, bool overwrite, IProgressMonitor monitor) {
-			Mercurial.StoreCredentials (pullLocation);
-			Mercurial.Pull (pullLocation, localPath.FullPath, remember, overwrite, monitor);
+			Client.StoreCredentials (pullLocation); Client.Pull (pullLocation, localPath.FullPath, remember, overwrite, monitor);
 		}// Pull
 
 		public virtual void Rebase (string pullLocation, FilePath localPath, bool remember, bool overwrite, IProgressMonitor monitor) {
-			Mercurial.StoreCredentials (pullLocation);
-			Mercurial.Rebase (pullLocation, localPath.FullPath, monitor);
+			Client.StoreCredentials (pullLocation);
+			Client.Rebase (pullLocation, localPath.FullPath, monitor);
 		}// Rebase
 
 		public virtual void Merge () {
-			Mercurial.Merge (this);
+			Client.Merge (this);
 		}// Merge
 		
 		public override void Update (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
-				Mercurial.Update (localPath.FullPath, recurse, monitor);
+				Client.Update (localPath.FullPath, recurse, monitor);
 		}
 
 		public override void Commit (ChangeSet changeSet, IProgressMonitor monitor)
 		{
-			Mercurial.Commit (changeSet, monitor);
+			Client.Commit (changeSet, monitor);
 		}
 
 		public override void Checkout (FilePath targetLocalPath, Revision rev, bool recurse, IProgressMonitor monitor)
 		{
-			Mercurial.StoreCredentials (Url);
+			Client.StoreCredentials (Url);
 			MercurialRevision brev = (null == rev)? new MercurialRevision (this, MercurialRevision.HEAD): (MercurialRevision)rev;
-			Mercurial.Checkout (Url, targetLocalPath.FullPath, brev, recurse, monitor);
+			Client.Checkout (Url, targetLocalPath.FullPath, brev, recurse, monitor);
 		}
 
 		public override void Revert (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
-				Mercurial.Revert (localPath.FullPath, recurse, monitor, new MercurialRevision (this, MercurialRevision.HEAD));
+				Client.Revert (localPath.FullPath, recurse, monitor, new MercurialRevision (this, MercurialRevision.HEAD));
 		}
 		
 		public override void Add (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
-				Mercurial.Add (localPath.FullPath, recurse, monitor);
+				Client.Add (localPath.FullPath, recurse, monitor);
 		}
 
 		public override string GetTextAtRevision (FilePath repositoryPath, Revision revision)
 		{
 			// System.Console.WriteLine ("Got GetTextAtRevision for {0}", repositoryPath);
 			MercurialRevision brev = (null == revision)? new MercurialRevision (this, MercurialRevision.HEAD): (MercurialRevision)revision;
-			return Mercurial.GetTextAtRevision (repositoryPath.FullPath, brev);
+			return Client.GetTextAtRevision (repositoryPath.FullPath, brev);
 		}
 
 		public override void RevertToRevision (FilePath localPath, Revision revision, IProgressMonitor monitor)
@@ -258,7 +258,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			}// warn about uncommitted changes
 
 			MercurialRevision brev = (null == revision)? new MercurialRevision (this, MercurialRevision.HEAD): (MercurialRevision)revision;
-			Mercurial.Revert (localPath.FullPath, true, monitor, brev);
+			Client.Revert (localPath.FullPath, true, monitor, brev);
 		}
 
 		public override void RevertRevision (FilePath localPath, Revision revision, IProgressMonitor monitor)
@@ -340,7 +340,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public virtual bool CanMerge (FilePath localPath)
 		{
-			return (Mercurial.GetHeads (this).Length > 1);
+			return (Client.GetHeads (this).Length > 1);
 		}// CanMerge
 		
 		public virtual bool CanBind (FilePath localPath)
@@ -382,60 +382,60 @@ namespace MonoDevelop.VersionControl.Mercurial
 				localFiles[i] = localPaths[i].ToRelative (baseLocalPath.FullPath);
 			}
 			
-			return Mercurial.Diff (baseLocalPath.FullPath, localFiles);
+			return Client.Diff (baseLocalPath.FullPath, localFiles);
 		}// PathDiff
 
 		public override DiffInfo[] PathDiff (FilePath localPath, Revision fromRevision, Revision toRevision)
 		{
-			return Mercurial.Diff (localPath, (MercurialRevision)fromRevision, (MercurialRevision)toRevision);
+			return Client.Diff (localPath, (MercurialRevision)fromRevision, (MercurialRevision)toRevision);
 		}
 
 		public override void DeleteFiles (FilePath[] localPaths, bool force, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
-				Mercurial.Remove (localPath.FullPath, force, monitor);
+				Client.Remove (localPath.FullPath, force, monitor);
 		}// DeleteFiles
 
 		public override void DeleteDirectories (FilePath[] localPaths, bool force, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
-				Mercurial.Remove (localPath.FullPath, force, monitor);
+				Client.Remove (localPath.FullPath, force, monitor);
 		}// DeleteDirectories
 
 		public virtual void Resolve (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
-				Mercurial.Resolve (localPath.FullPath, recurse, monitor);
+				Client.Resolve (localPath.FullPath, recurse, monitor);
 		}// Resolve
 
 		public virtual Dictionary<string, BranchType> GetKnownBranches (FilePath localPath)
 		{
-			return Mercurial.GetKnownBranches (localPath.FullPath);
+			return Client.GetKnownBranches (localPath.FullPath);
 		}// GetKnownBranches
 		
 		public virtual void Ignore (FilePath localPath)
 		{
-			Mercurial.Ignore (localPath.FullPath);
+			Client.Ignore (localPath.FullPath);
 		}// Ignore
 		
 		public virtual bool IsBound (FilePath localPath)
 		{
-			return Mercurial.IsBound (localPath.FullPath);
+			return Client.IsBound (localPath.FullPath);
 		}// IsBound
 		
 		public virtual string GetBoundBranch (FilePath localPath)
 		{
-			return Mercurial.GetBoundBranch (localPath.FullPath);
+			return Client.GetBoundBranch (localPath.FullPath);
 		}// GetBoundBranch
 		
 		public virtual void Bind (string branchUrl, FilePath localPath, IProgressMonitor monitor)
 		{
-			Mercurial.Bind (branchUrl, localPath.FullPath, monitor);
+			Client.Bind (branchUrl, localPath.FullPath, monitor);
 		}// Bind
 		
 		public virtual void Unbind (FilePath localPath, IProgressMonitor monitor)
 		{
-			Mercurial.Unbind (localPath.FullPath, monitor);
+			Client.Unbind (localPath.FullPath, monitor);
 		}// Unbind
 		
 		public virtual void Uncommit (FilePath localPath, IProgressMonitor monitor)
@@ -446,13 +446,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 					                   "There are uncommitted changed in the working copy. Aborting...").ShowAll ();
 				});
 			} else {
-				Mercurial.Uncommit (localPath.FullPath, monitor);
+				Client.Uncommit (localPath.FullPath, monitor);
 			}
 		}// Uncommit
 		
 		public override Annotation[] GetAnnotations (FilePath localPath)
 		{
-			return Mercurial.GetAnnotations (localPath.FullPath);
+			return Client.GetAnnotations (localPath.FullPath);
 		}// GetAnnotations
 		
 		/// <summary>
@@ -469,12 +469,105 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// </param>
 		public virtual void Export (FilePath localPath, FilePath exportLocation, IProgressMonitor monitor)
 		{
-			Mercurial.Export (localPath.FullPath, exportLocation.FullPath, monitor);
+			Client.Export (localPath.FullPath, exportLocation.FullPath, monitor);
 		}// Export
 		
 		public virtual bool CanRebase ()
 		{
-			return Mercurial.CanRebase ();
+			return Client.CanRebase ();
 		}// CanRebase
+		
+		VersionInfo GetVersionInfo (Repository repo, string localPath, bool getRemoteStatus)
+		{
+			return GetFileStatus (repo, localPath, getRemoteStatus);
+		}
+
+		VersionInfo[] GetDirectoryVersionInfo (Repository repo, string sourcepath, bool getRemoteStatus, bool recursive) {
+			IEnumerable<LocalStatus> statuses = Client.Status (sourcepath, null);
+			return CreateNodes (repo, statuses);
+		}
+		
+		/// <summary>
+		/// Gets the status of a version-controlled file
+		/// </summary>
+		/// <param name="repo">
+		/// A <see cref="Repository"/> to which the file belongs
+		/// </param>
+		/// <param name="sourcefile">
+		/// A <see cref="System.String"/>: The filename
+		/// </param>
+		/// <param name="getRemoteStatus">
+		/// A <see cref="System.Boolean"/>: unused
+		/// </param>
+		/// <returns>
+		/// A <see cref="VersionInfo"/> representing the file status
+		/// </returns>
+		private VersionInfo GetFileStatus (Repository repo, string sourcefile, bool getRemoteStatus)
+		{
+			IEnumerable<LocalStatus > statuses = Client.Status (sourcefile, null);
+			Func<LocalStatus,bool> match = (status => status.Filename == sourcefile);
+			
+			if (null == statuses || statuses.Count () == 0 || !statuses.Any (match))
+				throw new ArgumentException ("Path '" + sourcefile + "' does not exist in the repository.");
+			
+			return CreateNode (statuses.First (match), repo);
+		}// GetFileStatus
+
+		/// <summary>
+		/// Create a VersionInfo from a LocalStatus
+		/// </summary>
+		private VersionInfo CreateNode (LocalStatus status, Repository repo) 
+		{
+			VersionStatus rs = VersionStatus.Unversioned;
+			Revision rr = null;
+			
+			// Console.WriteLine ("Creating node for status {0}", status.Filename);
+			
+			VersionStatus vstatus = ConvertStatus (status.Status);
+			// System.Console.WriteLine ("Converted {0} to {1} for {2}", status.Status, vstatus, status.Filename);
+
+			VersionInfo ret = new VersionInfo (status.Filename, Path.GetFullPath (status.Filename), Directory.Exists (status.Filename),
+			                                   vstatus, new MercurialRevision (repo, status.Revision),
+			                                   rs, rr);
+			return ret;
+		}// CreateNode
+
+		/// <summary>
+		/// Create a VersionInfo[] from an IList<LocalStatus>
+		/// </summary>
+		private VersionInfo[] CreateNodes (Repository repo, IEnumerable<LocalStatus> statuses) {
+			List<VersionInfo> nodes = new List<VersionInfo> (statuses.Count ());
+
+			foreach (LocalStatus status in statuses) {
+				nodes.Add (CreateNode (status, repo));
+			}
+
+			return nodes.ToArray ();
+		}// CreateNodes
+		
+
+		/// <summary>
+		/// Convert an ItemStatus to a VersionStatus
+		/// </summary>
+		private VersionStatus ConvertStatus (ItemStatus status) {
+			switch (status) {
+			case ItemStatus.Added:
+				return VersionStatus.Versioned | VersionStatus.ScheduledAdd;
+			case ItemStatus.Conflicted:
+				return VersionStatus.Versioned | VersionStatus.Conflicted;
+			case ItemStatus.Deleted:
+				return VersionStatus.Versioned | VersionStatus.ScheduledDelete;
+			case ItemStatus.Ignored:
+				return VersionStatus.Versioned | VersionStatus.Ignored;
+			case ItemStatus.Modified:
+				return VersionStatus.Versioned | VersionStatus.Modified;
+			case ItemStatus.Replaced:
+				return VersionStatus.Versioned | VersionStatus.ScheduledReplace;
+			case ItemStatus.Unchanged:
+				return VersionStatus.Versioned;
+			}
+
+			return VersionStatus.Unversioned;
+		}// ConvertStatus
 	}// MercurialRepository
 }
