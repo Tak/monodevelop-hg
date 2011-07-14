@@ -282,8 +282,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Remove (string path, bool force, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			// Implement hg remove
-			throw new NotImplementedException ();
+			try {
+				client.Remove (new[]{path}, false, force, null, null);
+			} catch (CommandException ce) {
+				monitor.ReportError (ce.Message, ce);
+			}
+			
+			monitor.ReportSuccess (string.Empty);
 		}
 
 		public override void Resolve (string path, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
