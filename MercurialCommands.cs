@@ -257,7 +257,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 					bvc = (MercurialVersionControl)vcs;
 
 			if (null == bvc || !bvc.IsInstalled)
-				throw new Exception ("Can't use bazaar");
+				throw new Exception ("Can't use mercurial");
 
 			bvc.Init (path);
 			
@@ -629,7 +629,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		delegate bool ProjectCheck (string path);
 
 		/// <summary>
-		/// Performs a bzr branch
+		/// Performs a mercurial clone
 		/// </summary>
 		/// <param name="location">
 		/// A <see cref="System.String"/>: The from location
