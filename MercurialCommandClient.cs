@@ -396,8 +396,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override bool IsMergePending (string localPath)
 		{
-			// Implement hg parents
-			throw new NotImplementedException ();
+			return (1 < client.Parents (null, null).Count ());
 		}
 
 		public override bool CanRebase ()
