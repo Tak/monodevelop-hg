@@ -293,8 +293,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Resolve (string path, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			// Implement hg resolve
-			throw new NotImplementedException ();
+			try {
+				client.Resolve (new[]{path}, false, false, true, false, null, null, null);
+			} catch (CommandException ce) {
+				monitor.ReportError (ce.Message, ce);
+			}
+			
+			monitor.ReportSuccess (string.Empty);
 		}
 
 		public override System.Collections.Generic.Dictionary<string, BranchType> GetKnownBranches (string path)
