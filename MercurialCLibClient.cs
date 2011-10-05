@@ -70,7 +70,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		private static Regex unicodeRegex = new Regex (@"^\s*u'(?<realString>.*)'\s*$", RegexOptions.Compiled);
 		private delegate string StringMarshaller (IntPtr pointer);
-		private static StringMarshaller marshaller = (PropertyService.IsWindows)? 
+		private static StringMarshaller marshaller = (Platform.IsWindows)? 
 		                                             (StringMarshaller)Marshal.PtrToStringAnsi: 
 		                                             (StringMarshaller)Marshal.PtrToStringAuto;
 		/// <summary>
