@@ -5,8 +5,9 @@
     <target-gtk-version>2.12</target-gtk-version>
   </configuration>
   <import>
-    <widget-library name="../../../../github-repo/monodevelop/main/build/AddIns/VersionControl/MonoDevelop.VersionControl.dll" />
-    <widget-library name="../../../../github-repo/monodevelop/main/build/bin/MonoDevelop.Ide.dll" />
+    <widget-library name="Mono.Addins.Gui, Version=0.6.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <widget-library name="../../../unity/monodevelop/main/build/bin/MonoDevelop.Ide.dll" />
+    <widget-library name="../../../unity/monodevelop/main/build/AddIns/VersionControl/MonoDevelop.VersionControl.dll" />
     <widget-library name="../bin/Debug/MonoDevelop.VersionControl.Mercurial.dll" internal="true" />
   </import>
   <widget class="Gtk.Dialog" id="MonoDevelop.VersionControl.Mercurial.Dialogs.BranchSelectionDialog" design-size="808 508">
