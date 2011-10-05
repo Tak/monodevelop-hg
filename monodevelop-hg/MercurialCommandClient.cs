@@ -302,10 +302,17 @@ namespace MonoDevelop.VersionControl.Mercurial
 			monitor.ReportSuccess (string.Empty);
 		}
 
-		public override System.Collections.Generic.Dictionary<string, BranchType> GetKnownBranches (string path)
+		public override Dictionary<string, BranchType> GetKnownBranches (string path)
 		{
-			return new System.Collections.Generic.Dictionary<string, BranchType> ();
-			// throw new NotImplementedException ();
+			try {
+				return client.Paths ().Aggregate (new Dictionary<string, BranchType> (), (dict, pair) => {
+					dict[pair.Value] = BranchType.Parent;
+					return dict;
+				});
+			} catch (CommandException ce) {
+				LoggingService.LogWarning ("Error getting known branches", ce);
+			}
+			return new Dictionary<string, BranchType> ();
 		}
 
 		public override void StoreCredentials (string url)
