@@ -171,7 +171,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Branch (string branchLocation, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {
-				CommandClient.Clone (branchLocation, localPath, MercurialPath);
+				CommandClient.Clone (source: branchLocation, destination: localPath, mercurialPath: MercurialPath);
 			} catch (CommandException ce) {
 				monitor.ReportError (ce.Message, ce);
 			}
@@ -182,7 +182,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		internal static void Clone (string branchLocation, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {
-				CommandClient.Clone (branchLocation, localPath, DefaultMercurialPath);
+				CommandClient.Clone (source: branchLocation, destination: localPath, mercurialPath: DefaultMercurialPath);
 			} catch (CommandException ce) {
 				monitor.ReportError (ce.Message, ce);
 			}
