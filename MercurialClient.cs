@@ -231,7 +231,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			if (useFullPath)
 				normalizedPath = Path.GetFullPath (path);
 			
-			if (PropertyService.IsWindows && 
+			if (Platform.IsWindows && 
 			    !string.IsNullOrEmpty (normalizedPath) &&
 			    normalizedPath.Trim ().EndsWith (Path.DirectorySeparatorChar.ToString (), StringComparison.Ordinal)) {
 				normalizedPath = normalizedPath.Trim ().Remove (normalizedPath.Length - 1);
