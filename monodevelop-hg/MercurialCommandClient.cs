@@ -114,13 +114,17 @@ namespace MonoDevelop.VersionControl.Mercurial
 			if (null != revision && MercurialRevision.HEAD != revision.Rev && MercurialRevision.NONE != revision.Rev)
 				revString = revision.Rev;
 				
-			IDictionary<string,global::Mercurial.Status> statuses = client.Status (new[]{path}, global::Mercurial.Status.Default, false, null, revString, null, null, false);
+			IDictionary<string,global::Mercurial.Status> statuses = client.Status (new[]{path}, onlyRevision: revString);
 			if (!statuses.ContainsKey (path)) {
 				if (statuses.Any (pair => pair.Value != global::Mercurial.Status.Clean))
 					statuses[path] = global::Mercurial.Status.Modified;
 				else statuses[path] = global::Mercurial.Status.Clean;
 			}
-			return statuses.Select (pair => new LocalStatus (MercurialRevision.NONE, pair.Key, ConvertCommandStatus (pair.Value)));
+			
+			// Convert relative paths to base-path-relative instead of repo-relative
+			return statuses.Select (pair => new LocalStatus (MercurialRevision.NONE,
+				Path.IsPathRooted (pair.Key)? pair.Key: (string)((FilePath)Path.Combine (client.Root, pair.Key)).ToRelative (path),
+				ConvertCommandStatus (pair.Value)));
 		}
 		
 		static ItemStatus ConvertCommandStatus (global::Mercurial.Status status)
@@ -245,7 +249,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Commit (ChangeSet changeSet, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {
-				client.Commit (changeSet.GlobalComment, changeSet.Items.Select (i => (string)i.LocalPath).ToArray ());
+				client.Commit (changeSet.GlobalComment, changeSet.Items.Select (i => Path.Combine (changeSet.BaseLocalPath, i.LocalPath)).ToArray ());
 			} catch (CommandException ce) {
 				monitor.ReportError (ce.Message, ce);
 			}
