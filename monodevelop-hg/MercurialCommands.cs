@@ -164,7 +164,15 @@ namespace MonoDevelop.VersionControl.Mercurial
 		[CommandUpdateHandler (MercurialCommands.Rebase)]
 		protected void CanRebase (CommandInfo item)
 		{
-			CanPull (item);
+			if (1 == GetItems ().Count) {
+				VersionControlItem vcitem = GetItems ()[0];
+				if (vcitem.Repository is MercurialRepository) {
+					var repo = vcitem.Repository as MercurialRepository;
+					item.Visible = (repo.CanPull (vcitem.Path) &&
+					                repo.CanRebase ());
+				}
+			} 
+			item.Visible = false;
 		}// CanRebase
 
 		/// <summary>
