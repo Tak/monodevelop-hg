@@ -6,7 +6,7 @@
        url       = "https://code.launchpad.net/~taktaktaktaktaktaktaktaktaktak/+junk/monodevelop-hg"
        description = "Mercurial support for the Version Control Addin"
        category    = "Version Control"
-       version   = "2.6.0">
+       version   = "2.8.0">
  
 	<Runtime>
 		<Import assembly="MonoDevelop.VersionControl.Mercurial.dll"/>
@@ -14,9 +14,9 @@
 	</Runtime>
 
 	<Dependencies>
-		<Addin id="Core" version="2.6"/>
-		<Addin id="Ide" version="2.6"/>
-		<Addin id="VersionControl" version="2.6"/>
+		<Addin id="Core" version="2.8"/>
+		<Addin id="Ide" version="2.8"/>
+		<Addin id="VersionControl" version="2.8"/>
 	</Dependencies>
 	
 	<Extension path = "/MonoDevelop/VersionControl/VersionControlSystems">
