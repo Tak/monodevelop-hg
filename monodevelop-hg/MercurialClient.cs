@@ -217,15 +217,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// <summary>
 		/// Normalize a local file path (primarily for windows)
 		/// </summary>
-		internal static string NormalizePath (string path)
-		{
-			return NormalizePath (path, true);
-		}
-
-		/// <summary>
-		/// Normalize a local file path (primarily for windows)
-		/// </summary>
-		internal static string NormalizePath (string path, bool useFullPath)
+		internal static string NormalizePath (string path, bool useFullPath=true)
 		{
 			string normalizedPath = path;
 			if (useFullPath)
@@ -237,8 +229,44 @@ namespace MonoDevelop.VersionControl.Mercurial
 				normalizedPath = normalizedPath.Trim ().Remove (normalizedPath.Length - 1);
 			}// strip trailing backslash
 			
+			normalizedPath = ResolveSymlink (normalizedPath);
+
 			return normalizedPath;
 		}// NormalizePath
+		
+		internal static string ResolveSymlink (string path)
+		{
+			if (string.IsNullOrEmpty (path))
+				throw new ArgumentException ("Empty path not allowed", "path");
+				
+#if !WINDOWS
+			string[] chunks = path.Split (new[]{Path.DirectorySeparatorChar}, StringSplitOptions.RemoveEmptyEntries);
+			string subpath = chunks[0];
+			Mono.Unix.UnixSymbolicLinkInfo link;
+			
+			if (Path.IsPathRooted (path))
+				subpath = Path.Combine (Path.GetPathRoot (path), subpath);
+			
+			for (int i=1; i<chunks.Length; ++i) {
+				link = new Mono.Unix.UnixSymbolicLinkInfo (subpath);
+				if (link.IsSymbolicLink) {
+					subpath = link.GetContents ().FullName;
+					--i;
+					continue;
+				}
+				subpath = Path.Combine (subpath, chunks[i]);
+			}
+			
+			link = new Mono.Unix.UnixSymbolicLinkInfo (subpath);
+			if (link.IsSymbolicLink)
+				subpath = link.GetContents ().FullName;
+			if (path != subpath)
+				Console.WriteLine ("Subsituting {0} for {1}", subpath, path);
+			path = subpath;
+#endif
+			
+			return path;
+		}
 	}
 
 	public class LocalStatus {
