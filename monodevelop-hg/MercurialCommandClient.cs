@@ -245,7 +245,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Commit (ChangeSet changeSet, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {
-				client.Commit (changeSet.GlobalComment, changeSet.Items.Select (i => (string)i.LocalPath.FullPath).ToArray ());
+				client.Commit (changeSet.GlobalComment, changeSet.Items.Select (i => (string)i.LocalPath).ToArray ());
 			} catch (CommandException ce) {
 				monitor.ReportError (ce.Message, ce);
 			}
