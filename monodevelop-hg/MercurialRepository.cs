@@ -31,6 +31,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 	{
 		private Dictionary<string,string> tempfiles;
 		private Dictionary<FilePath,VersionInfo> statusCache;
+		private HashSet<FilePath> updatedOnce;
 		internal MercurialClient Client{ get; private set; }
 
 		public override string[] SupportedProtocols {
@@ -53,6 +54,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			tempfiles = new Dictionary<string,string> ();
 			statusCache = new Dictionary<FilePath, VersionInfo> ();
+			updatedOnce = new HashSet<FilePath> ();
 		}// Init
 
 		/// <summary>
@@ -156,8 +158,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 			if (statusCache.ContainsKey (localPath)) {
 				status = statusCache[localPath];
 			} else {
-				status = GetVersionInfo (localPath, getRemoteStatus);
+				status = new VersionInfo (localPath, GetLocalBasePath (localPath), Directory.Exists (localPath), VersionStatus.Unversioned, null, VersionStatus.Unversioned, null);
 			}
+			
 			return status;
 		}
 		
@@ -479,8 +482,26 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		VersionInfo GetVersionInfo (Repository repo, string localPath, bool getRemoteStatus)
 		{
-			return GetFileStatus (repo, localPath, getRemoteStatus);
-		}
+			VersionInfo status = GetCachedVersionInfo (localPath, getRemoteStatus);
+			
+			ThreadPool.QueueUserWorkItem (delegate {
+				var info = GetFileStatus (this, localPath, getRemoteStatus);
+				
+				MonoDevelop.Ide.DispatchService.GuiDispatch (delegate {
+					bool notify = !updatedOnce.Contains (localPath);
+					updatedOnce.Add (localPath);
+					statusCache[localPath] = info;
+					
+					// Use the base notifier to make the first change
+					// ripple back to here
+					if (notify)
+						FileService.NotifyFileChanged (localPath);
+					NotifyFileChanged (localPath);
+				});
+			});
+			
+			return status;
+		}// GetVersionInfo
 
 		VersionInfo[] GetDirectoryVersionInfo (Repository repo, string sourcepath, bool getRemoteStatus, bool recursive) {
 			IEnumerable<LocalStatus> statuses = Client.Status (sourcepath, null);
