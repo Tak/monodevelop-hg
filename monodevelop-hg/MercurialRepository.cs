@@ -486,7 +486,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 			VersionInfo status = GetCachedVersionInfo (localPath, getRemoteStatus);
 			
 			ThreadPool.QueueUserWorkItem (delegate {
+				Thread.Yield ();
 				var info = GetFileStatus (this, localPath, getRemoteStatus);
+				Thread.Yield ();
 				
 				MonoDevelop.Ide.DispatchService.GuiDispatch (delegate {
 					bool notify = !updatedOnce.Contains (localPath);
