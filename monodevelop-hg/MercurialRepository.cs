@@ -482,6 +482,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		VersionInfo GetVersionInfo (Repository repo, string localPath, bool getRemoteStatus)
 		{
+			localPath = ((FilePath)localPath).CanonicalPath;
 			VersionInfo status = GetCachedVersionInfo (localPath, getRemoteStatus);
 			
 			ThreadPool.QueueUserWorkItem (delegate {
