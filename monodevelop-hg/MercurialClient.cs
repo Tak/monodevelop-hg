@@ -234,6 +234,18 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return normalizedPath;
 		}// NormalizePath
 		
+		/// <summary>
+		/// Returns the real path for a path containing a symbolic link
+		/// </summary>
+		/// <returns>
+		/// A resolved path.
+		/// </returns>
+		/// <param name='path'>
+		/// A path that may traverse a symbolic link.
+		/// </param>
+		/// <exception cref='ArgumentException'>
+		/// Is thrown when path is empty.
+		/// </exception>
 		internal static string ResolveSymlink (string path)
 		{
 			if (string.IsNullOrEmpty (path))
@@ -260,8 +272,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 			link = new Mono.Unix.UnixSymbolicLinkInfo (subpath);
 			if (link.IsSymbolicLink)
 				subpath = link.GetContents ().FullName;
-			if (path != subpath)
-				Console.WriteLine ("Subsituting {0} for {1}", subpath, path);
+//			if (path != subpath)
+//				Console.WriteLine ("Subsituting {0} for {1}", subpath, path);
 			path = subpath;
 #endif
 			
