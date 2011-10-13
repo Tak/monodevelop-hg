@@ -31,6 +31,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 	{
 		private Dictionary<string,string> tempfiles;
 		private Dictionary<FilePath,VersionInfo> statusCache;
+		private Dictionary<FilePath,VersionInfo[]> directoryStatusCache;
 		private HashSet<FilePath> updatedOnce;
 		internal MercurialClient Client{ get; private set; }
 
@@ -48,13 +49,25 @@ namespace MonoDevelop.VersionControl.Mercurial
 			Init ();
 			Url = url;
 			Client = new MercurialCommandClient (new Uri (url).AbsolutePath, null);
+			Ide.IdeApp.Workspace.SolutionUnloaded += HandleSolutionUnloaded;
+		}
+
+		void HandleSolutionUnloaded (object sender, MonoDevelop.Projects.SolutionEventArgs e)
+		{
+			updatedOnce.Clear ();
+		}
+		
+		~MercurialRepository ()
+		{
+			Ide.IdeApp.Workspace.SolutionLoaded -= HandleSolutionUnloaded;
 		}
 
 		private void Init ()
 		{
 			tempfiles = new Dictionary<string,string> ();
-			statusCache = new Dictionary<FilePath, VersionInfo> ();
 			updatedOnce = new HashSet<FilePath> ();
+			statusCache = new Dictionary<FilePath, VersionInfo> ();
+			directoryStatusCache = new Dictionary<FilePath, VersionInfo[]> ();
 		}// Init
 
 		/// <summary>
@@ -144,9 +157,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		protected override IEnumerable<VersionInfo> OnGetVersionInfo (IEnumerable<FilePath> localPaths, bool getRemoteStatus)
 		{
-			return localPaths.Select (localPath => 
-				statusCache[localPath] = GetVersionInfo (this, localPath.FullPath, getRemoteStatus)
-			);
+			return localPaths.Select (localPath => {
+				var status = GetVersionInfo (this, localPath.FullPath, getRemoteStatus);
+				lock (statusCache) {
+					statusCache[localPath.CanonicalPath] = status;
+				}
+				return status;
+			});
 		}
 		
 		/// <summary>
@@ -155,10 +172,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 		private VersionInfo GetCachedVersionInfo (FilePath localPath, bool getRemoteStatus)
 		{
 			VersionInfo status = null;
-			if (statusCache.ContainsKey (localPath)) {
-				status = statusCache[localPath];
-			} else {
-				status = new VersionInfo (localPath, GetLocalBasePath (localPath), Directory.Exists (localPath), VersionStatus.Unversioned, null, VersionStatus.Unversioned, null);
+			
+			lock (statusCache) {
+				if (statusCache.ContainsKey (localPath)) {
+					status = statusCache[localPath.CanonicalPath];
+				} else {
+					status = new VersionInfo (localPath, GetLocalBasePath (localPath), Directory.Exists (localPath), VersionStatus.Unversioned, null, VersionStatus.Unversioned, null);
+				}
 			}
 			
 			return status;
@@ -168,8 +188,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			VersionInfo[] versions = GetDirectoryVersionInfo (this, localDirectory.FullPath, getRemoteStatus, recursive);
 			if (null != versions) {
-				foreach (VersionInfo version in versions) {
-					statusCache[version.LocalPath] = version;
+				lock (statusCache) {
+					foreach (VersionInfo version in versions) {
+						statusCache[version.LocalPath.CanonicalPath] = version;
+					}
 				}
 			}
 			return versions;
@@ -483,6 +505,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 		VersionInfo GetVersionInfo (Repository repo, string localPath, bool getRemoteStatus)
 		{
 			localPath = ((FilePath)localPath).CanonicalPath;
+			// Console.WriteLine ("GetVersionInfo {0}", localPath);
+			
 			VersionInfo status = GetCachedVersionInfo (localPath, getRemoteStatus);
 			
 			ThreadPool.QueueUserWorkItem (delegate {
@@ -490,25 +514,47 @@ namespace MonoDevelop.VersionControl.Mercurial
 				var info = GetFileStatus (this, localPath, getRemoteStatus);
 				Thread.Yield ();
 				
-				MonoDevelop.Ide.DispatchService.GuiDispatch (delegate {
-					bool notify = !updatedOnce.Contains (localPath);
-					updatedOnce.Add (localPath);
+				bool notify = !updatedOnce.Contains (localPath);
+				updatedOnce.Add (localPath);
+				lock (statusCache) {
 					statusCache[localPath] = info;
-					
-					// Use the base notifier to make the first change
-					// ripple back to here
-					if (notify)
+				}
+				
+				// Use the base notifier to make the first change
+				// ripple back to here
+				if (notify)
+					Ide.DispatchService.GuiDispatch (delegate {
+						// Console.WriteLine ("Notifying {0}", localPath);
 						FileService.NotifyFileChanged (localPath);
-					NotifyFileChanged (localPath);
-				});
+					});
+				NotifyFileChanged (localPath);
 			});
 			
 			return status;
 		}// GetVersionInfo
 
 		VersionInfo[] GetDirectoryVersionInfo (Repository repo, string sourcepath, bool getRemoteStatus, bool recursive) {
-			IEnumerable<LocalStatus> statuses = Client.Status (sourcepath, null);
-			return CreateNodes (repo, statuses);
+			sourcepath = ((FilePath)sourcepath).CanonicalPath;
+			// Console.WriteLine ("GetDirectoryVersionInfo {0}", sourcepath);
+			
+			ThreadPool.QueueUserWorkItem (delegate {
+				Thread.Yield ();
+				IEnumerable<LocalStatus> someStatuses = Client.Status (sourcepath, null);
+				lock (statusCache) {
+					var someInfos = CreateNodes (repo, someStatuses);
+					directoryStatusCache[sourcepath] = someInfos;
+					foreach (var status in someInfos) {
+						// updatedOnce.Add (status.LocalPath.CanonicalPath);
+						statusCache[status.LocalPath.CanonicalPath] = status;
+					}
+				}
+				foreach (var status in someStatuses)
+					NotifyFileChanged (status.Filename);
+			});
+			if (directoryStatusCache.ContainsKey (sourcepath)) {
+				return directoryStatusCache[sourcepath];
+			}
+			return new []{ GetCachedVersionInfo (sourcepath, getRemoteStatus) };
 		}
 		
 		/// <summary>
