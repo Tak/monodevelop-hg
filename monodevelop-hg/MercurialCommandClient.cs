@@ -70,7 +70,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 							return CheckVersion (client.Version);
 						}
 					} finally {
-						Directory.Delete (path, true);
+						try {
+							Directory.Delete (path, true);
+						} catch {}
 					}
 				} catch {
 				}

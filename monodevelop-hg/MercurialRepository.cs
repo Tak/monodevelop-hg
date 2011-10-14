@@ -57,11 +57,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			updatedOnce.Clear ();
 		}
 		
-		~MercurialRepository ()
-		{
-			Ide.IdeApp.Workspace.SolutionLoaded -= HandleSolutionUnloaded;
-		}
-
 		private void Init ()
 		{
 			tempfiles = new Dictionary<string,string> ();
@@ -75,9 +70,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// </summary>
 		~MercurialRepository ()
 		{
-			foreach (string tmpfile in tempfiles.Values) {
-				if (File.Exists (tmpfile)){ File.Delete (tmpfile); }
-			}
+			try {
+				foreach (string tmpfile in tempfiles.Values) {
+					if (File.Exists (tmpfile)){ File.Delete (tmpfile); }
+				}
+			} catch {}
+			
+			Ide.IdeApp.Workspace.SolutionLoaded -= HandleSolutionUnloaded;
 		}// finalizer
 		
 		public override bool HasChildRepositories { 
@@ -578,7 +577,8 @@ namespace MonoDevelop.VersionControl.Mercurial
 			Func<LocalStatus,bool> match = (status => status.Filename == sourcefile);
 			
 			if (null == statuses || statuses.Count () == 0 || !statuses.Any (match))
-				throw new ArgumentException ("Path '" + sourcefile + "' does not exist in the repository.");
+				return new VersionInfo (sourcefile, GetLocalBasePath (sourcefile), Directory.Exists (sourcefile), VersionStatus.Unversioned, null, VersionStatus.Unversioned, null);
+				// throw new ArgumentException ("Path '" + sourcefile + "' does not exist in the repository.");
 			
 			return CreateNode (statuses.First (match), repo);
 		}// GetFileStatus
