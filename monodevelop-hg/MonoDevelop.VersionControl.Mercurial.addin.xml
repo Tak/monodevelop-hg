@@ -3,14 +3,13 @@
        name      = "Mercurial support for the Version Control Addin"
        author    = "Levi Bard"
        copyright = "GPL"
-       url       = "https://code.launchpad.net/~taktaktaktaktaktaktaktaktaktak/+junk/monodevelop-hg"
+       url       = "https://fogbugz.unity3d.com/kiln/Repo/Public/Mercurial/monodevelop-hg"
        description = "Mercurial support for the Version Control Addin"
        category    = "Version Control"
        version   = "2.8.0">
  
 	<Runtime>
 		<Import assembly="MonoDevelop.VersionControl.Mercurial.dll"/>
-		<Import file="MonoDevelop.VersionControl.Mercurial.dll.config"/>
 	</Runtime>
 
 	<Dependencies>
