@@ -504,56 +504,20 @@ namespace MonoDevelop.VersionControl.Mercurial
 		VersionInfo GetVersionInfo (Repository repo, string localPath, bool getRemoteStatus)
 		{
 			localPath = ((FilePath)localPath).CanonicalPath;
-			// Console.WriteLine ("GetVersionInfo {0}", localPath);
-			
-			VersionInfo status = GetCachedVersionInfo (localPath, getRemoteStatus);
-			
-			ThreadPool.QueueUserWorkItem (delegate {
-				Thread.Yield ();
-				var info = GetFileStatus (this, localPath, getRemoteStatus);
-				Thread.Yield ();
-				
-				bool notify = !updatedOnce.Contains (localPath);
-				updatedOnce.Add (localPath);
-				lock (statusCache) {
-					statusCache[localPath] = info;
-				}
-				
-				// Use the base notifier to make the first change
-				// ripple back to here
-				if (notify)
-					Ide.DispatchService.GuiDispatch (delegate {
-						// Console.WriteLine ("Notifying {0}", localPath);
-						FileService.NotifyFileChanged (localPath);
-					});
-				NotifyFileChanged (localPath);
-			});
-			
-			return status;
+			return (statusCache[localPath] = GetFileStatus (repo, localPath, getRemoteStatus));
 		}// GetVersionInfo
 
 		VersionInfo[] GetDirectoryVersionInfo (Repository repo, string sourcepath, bool getRemoteStatus, bool recursive) {
 			sourcepath = ((FilePath)sourcepath).CanonicalPath;
-			// Console.WriteLine ("GetDirectoryVersionInfo {0}", sourcepath);
-			
-			ThreadPool.QueueUserWorkItem (delegate {
-				Thread.Yield ();
-				IEnumerable<LocalStatus> someStatuses = Client.Status (sourcepath, null);
-				lock (statusCache) {
-					var someInfos = CreateNodes (repo, someStatuses);
-					directoryStatusCache[sourcepath] = someInfos;
-					foreach (var status in someInfos) {
-						// updatedOnce.Add (status.LocalPath.CanonicalPath);
-						statusCache[status.LocalPath.CanonicalPath] = status;
-					}
+			IEnumerable<LocalStatus> someStatuses = Client.Status (sourcepath, null);
+			VersionInfo[] someInfos = null;
+			lock (statusCache) {
+				someInfos = CreateNodes (repo, someStatuses);
+				foreach (var status in someInfos) {
+					statusCache[status.LocalPath.CanonicalPath] = status;
 				}
-				foreach (var status in someStatuses)
-					NotifyFileChanged (status.Filename);
-			});
-			if (directoryStatusCache.ContainsKey (sourcepath)) {
-				return directoryStatusCache[sourcepath];
 			}
-			return new []{ GetCachedVersionInfo (sourcepath, getRemoteStatus) };
+			return someInfos;
 		}
 		
 		/// <summary>
