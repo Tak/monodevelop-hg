@@ -131,9 +131,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 				}
 			}
 			
-			// Convert relative paths to base-path-relative instead of repo-relative
+			// Convert relative paths to absolute
 			return statuses.Select (pair => new LocalStatus (MercurialRevision.NONE,
-				Path.IsPathRooted (pair.Key)? pair.Key: (string)((FilePath)Path.Combine (client.Root, pair.Key)).ToRelative (path),
+				Path.IsPathRooted (pair.Key)? pair.Key: (string)((FilePath)Path.Combine (client.Root, pair.Key)),
 				ConvertCommandStatus (pair.Value)));
 		}
 		
