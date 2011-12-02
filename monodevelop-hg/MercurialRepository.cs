@@ -238,6 +238,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Commit (ChangeSet changeSet, IProgressMonitor monitor)
 		{
 			Client.Commit (changeSet, monitor);
+			FileService.NotifyFileChanged (changeSet.BaseLocalPath);
 		}
 
 		public override void Checkout (FilePath targetLocalPath, Revision rev, bool recurse, IProgressMonitor monitor)
