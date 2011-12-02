@@ -113,19 +113,21 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override System.Collections.Generic.IEnumerable<LocalStatus> Status (string path, MercurialRevision revision)
 		{
 			string normalizedPath = NormalizePath (path);
+			string rootRelativePath = ((FilePath)normalizedPath).ToRelative (client.Root);
 			string revString = null;
 			if (null != revision && MercurialRevision.HEAD != revision.Rev && MercurialRevision.NONE != revision.Rev)
 				revString = revision.Rev;
 				
 			IDictionary<string,global::Mercurial.Status> statuses = client.Status (new[]{normalizedPath}, onlyRevision: revString);
 			if (!statuses.ContainsKey (path)) {
-				if (statuses.ContainsKey (normalizedPath)) {
-					statuses[path] = statuses[normalizedPath];
+				if (statuses.ContainsKey (rootRelativePath)) {
+					statuses [path] = statuses [rootRelativePath];
+					statuses.Remove (rootRelativePath);
+				} else if (statuses.ContainsKey (normalizedPath)) {
+					statuses [path] = statuses [normalizedPath];
 					statuses.Remove (normalizedPath);
 				} else {
-					if (statuses.Any (pair => pair.Value != global::Mercurial.Status.Clean))
-						statuses[path] = global::Mercurial.Status.Modified;
-					else statuses[path] = global::Mercurial.Status.Clean;
+					statuses [path] = global::Mercurial.Status.Clean;
 				}
 			}
 			
