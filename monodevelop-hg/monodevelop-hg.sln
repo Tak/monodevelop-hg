@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monodevelop-hg", "monodevelop-hg.csproj", "{2E2AA9EF-1D11-4E71-87BF-6CD48C0CF23F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mercurial", "..\Transmission\Mercurial\Mercurial.csproj", "{FADE5BAA-E0A3-4B05-A121-CD33A90A76A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mercurial", "..\hglib-cli\Mercurial\Mercurial.csproj", "{FADE5BAA-E0A3-4B05-A121-CD33A90A76A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "..\Transmission\Tests\Tests.csproj", "{BC14E588-EA5B-4B87-8D86-E1D25EF29B18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "..\hglib-cli\Tests\Tests.csproj", "{BC14E588-EA5B-4B87-8D86-E1D25EF29B18}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
