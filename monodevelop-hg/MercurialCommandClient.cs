@@ -232,7 +232,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Push (string pushLocation, string localPath, bool remember, bool overwrite, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {
-				client.Push (pushLocation, null, overwrite, null, overwrite);
+				client.Push (pushLocation, force: overwrite, allowNewBranch: overwrite);
 			} catch (CommandException ce) {
 				monitor.ReportError (ce.Message, ce);
 			}
@@ -243,7 +243,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Pull (string pullLocation, string localPath, bool remember, bool overwrite, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {
-				client.Pull (pullLocation, null, true, overwrite, null);
+				client.Pull (pullLocation, update: true, force: overwrite);
 			} catch (CommandException ce) {
 				monitor.ReportError (ce.Message, ce);
 			}
@@ -297,7 +297,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Remove (string path, bool force, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {
-				client.Remove (new[]{path}, false, force, null, null);
+				client.Remove (new[]{path}, force: force);
 			} catch (CommandException ce) {
 				monitor.ReportError (ce.Message, ce);
 			}
@@ -308,7 +308,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public override void Resolve (string path, bool recurse, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {
-				client.Resolve (new[]{path}, false, false, true, false, null, null, null);
+				client.Resolve (new[]{path}, mark: true);
 			} catch (CommandException ce) {
 				monitor.ReportError (ce.Message, ce);
 			}
@@ -386,7 +386,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override Annotation[] GetAnnotations (string localPath)
 		{
-			var lines = client.Annotate (null, new[]{NormalizePath (localPath)}, true, false, true, false, true, true, false, false, true, null, null).Split ('\n');
+			var lines = client.Annotate (null, new[]{NormalizePath (localPath)}, followCopies: true, showAuthor: true, showDate: true, showRevision: true, showChangeset: false, showLine: false, shortDate: true).Split ('\n');
 			var annotations = new List<Annotation> ();
 			char[] separators = new char[]{ ' ', '\t', ':' };
 			Annotation previous = null;
