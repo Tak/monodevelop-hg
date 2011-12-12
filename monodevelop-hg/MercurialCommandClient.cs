@@ -373,8 +373,15 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Uncommit (string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			// Implement hg rollback
-			throw new NotImplementedException ();
+			try {
+				if (!client.Rollback ()) {
+					monitor.ReportWarning ("Rollback failed");
+				}
+			} catch (CommandException ce) {
+				monitor.ReportError (ce.Message, ce);
+			}
+			
+			monitor.ReportSuccess (string.Empty);
 		}
 
 		public override Annotation[] GetAnnotations (string localPath)
