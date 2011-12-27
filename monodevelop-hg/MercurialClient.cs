@@ -114,7 +114,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract void Remove (string path, bool force, IProgressMonitor monitor);
 		public abstract void Resolve (string path, bool recurse, IProgressMonitor monitor);
 		public abstract Dictionary<string, BranchType> GetKnownBranches (string path);
-		public abstract void StoreCredentials (string url);
 		public abstract void Init (string path);
 		public abstract void Ignore (string path);
 		public abstract bool IsBound (string path);

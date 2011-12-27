@@ -329,12 +329,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return new Dictionary<string, BranchType> ();
 		}
 
-		public override void StoreCredentials (string url)
-		{
-			// Does this make sense?
-			// throw new NotImplementedException ();
-		}
-
 		public override void Init (string path)
 		{
 			CommandClient.Initialize (NormalizePath (path), MercurialPath);
