@@ -363,16 +363,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return (Client.GetHeads (this).Length > 1);
 		}// CanMerge
 		
-		public virtual bool CanBind (FilePath localPath)
-		{
-			return Directory.Exists (localPath.FullPath) && !IsBound (localPath);
-		}// CanBind
-		
-		public virtual bool CanUnbind (FilePath localPath)
-		{
-			return Directory.Exists (localPath.FullPath) && IsBound (localPath);
-		}// CanUnbind
-		
 		public virtual bool CanUncommit (FilePath localPath)
 		{
 			return Directory.Exists (localPath.FullPath) && IsVersioned (localPath);
@@ -437,26 +427,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			Client.Ignore (localPath.FullPath);
 		}// Ignore
-		
-		public virtual bool IsBound (FilePath localPath)
-		{
-			return Client.IsBound (localPath.FullPath);
-		}// IsBound
-		
-		public virtual string GetBoundBranch (FilePath localPath)
-		{
-			return Client.GetBoundBranch (localPath.FullPath);
-		}// GetBoundBranch
-		
-		public virtual void Bind (string branchUrl, FilePath localPath, IProgressMonitor monitor)
-		{
-			Client.Bind (branchUrl, localPath.FullPath, monitor);
-		}// Bind
-		
-		public virtual void Unbind (FilePath localPath, IProgressMonitor monitor)
-		{
-			Client.Unbind (localPath.FullPath, monitor);
-		}// Unbind
 		
 		public virtual void Uncommit (FilePath localPath, IProgressMonitor monitor)
 		{

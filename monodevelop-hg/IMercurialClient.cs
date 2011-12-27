@@ -331,48 +331,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		void Ignore (string path);
 		
 		/// <summary>
-		/// Determines whether a path's branch is bound.
-		/// </summary>
-		bool IsBound (string path);
-		
-		/// <summary>
-		/// Gets the branch bound to the current path, 
-		/// or the branch that would be bound if the branch were bound.
-		/// </summary>
-		/// <param name="path">
-		/// A <see cref="System.String"/>: A path contained in a local branch
-		/// </param>
-		/// <returns>
-		/// A <see cref="System.String"/>: The bound branch url, or empty string if none
-		/// </returns>
-		string GetBoundBranch (string path);
-		
-		/// <summary>
-		/// Convert a local branch into a checkout of the supplied branch.
-		/// </summary>
-		/// <param name="branchUrl">
-		/// A <see cref="System.String"/>: The url of the branch to bind
-		/// </param>
-		/// <param name="localPath">
-		/// A <see cref="System.String"/>: The local branch
-		/// </param>
-		/// <param name="monitor">
-		/// A <see cref="IProgressMonitor"/>
-		/// </param>
-		void Bind (string branchUrl, string localPath, IProgressMonitor monitor);
-		
-		/// <summary>
-		/// Convert a local checkout into a regular branch.
-		/// </summary>
-		/// <param name="localPath">
-		/// A <see cref="System.String"/>: The local checkout
-		/// </param>
-		/// <param name="monitor">
-		/// A <see cref="IProgressMonitor"/>
-		/// </param>
-		void Unbind (string localPath, IProgressMonitor monitor);
-		
-		/// <summary>
 		/// Remove the last committed revision.
 		/// </summary>
 		/// <param name="localPath">

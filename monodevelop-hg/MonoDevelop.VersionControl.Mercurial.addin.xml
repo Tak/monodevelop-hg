@@ -41,8 +41,6 @@
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Outgoing" />
 			<!--
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Push" />
-			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Merge" />
-			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Unbind" insertafter="MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind" />
 			-->
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Uncommit" insertafter="MonoDevelop.VersionControl.Commands.Commit" />
 			<CommandItem id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Export" insertafter="MonoDevelop.VersionControl.Commands.Log" />
@@ -94,12 +92,6 @@
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Ignore"
 			_label = "_Ignore"
 			description = "Instruct Mercurial to ignore this file." />
-		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Bind"
-			_label = "_Bind"
-			description = "Convert the current branch into a checkout." />
-		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Unbind"
-			_label = "_Unbind"
-			description = "Convert the current checkout into a regular branch." />
 		<Command id = "MonoDevelop.VersionControl.Mercurial.MercurialCommands.Uncommit"
 			_label = "Rollback"
 			icon = "vc-revert-command" 
