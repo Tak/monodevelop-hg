@@ -30,13 +30,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 {
 	public class MercurialVersionControl : VersionControlSystem
 	{
-		// TODO: Obtain this list from bzr.
 		/// <value>
 		/// Protocols supported by this addin
 		/// </value>
 		public static readonly string[] protocols = {
-			"http", "https", "bzr", "bzr+ssh", "sftp", 
-			"ftp", "file" 
+			"http", "https", "ssh", "file"
 		};
 
 		public override string Name {

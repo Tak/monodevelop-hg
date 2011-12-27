@@ -107,7 +107,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		// FIXME: Is this being used for anything?
 		public override System.Collections.Generic.IList<string> List (string path, bool recurse, ListKind kind)
 		{
-			return new string[]{ path };
+			throw new NotImplementedException ("Is List being used for anything?");
 		}
 
 		public override System.Collections.Generic.IEnumerable<LocalStatus> Status (string path, MercurialRevision revision)
