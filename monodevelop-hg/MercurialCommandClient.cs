@@ -345,26 +345,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			throw new NotImplementedException ();
 		}
 
-		public override bool IsBound (string path)
-		{
-			return false;
-		}
-
-		public override string GetBoundBranch (string path)
-		{
-			throw new NotImplementedException ();
-		}
-
-		public override void Bind (string branchUrl, string localPath, MonoDevelop.Core.IProgressMonitor monitor)
-		{
-			throw new NotImplementedException ();
-		}
-
-		public override void Unbind (string localPath, MonoDevelop.Core.IProgressMonitor monitor)
-		{
-			throw new NotImplementedException ();
-		}
-
 		public override void Uncommit (string localPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
 			try {

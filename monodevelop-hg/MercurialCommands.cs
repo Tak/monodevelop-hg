@@ -58,8 +58,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		Branch,
 		Init,
 		Ignore,
-		Bind,
-		Unbind,
 		Uncommit,
 		Export,
 		Push,
@@ -322,71 +320,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 			VersionControlItem vcitem = GetItems ()[0];
 			((MercurialRepository)vcitem.Repository).Ignore (vcitem.Path);
 		}// OnIgnore
-		
-		[CommandUpdateHandler (MercurialCommands.Bind)]
-		protected void CanBind (CommandInfo item)
-		{
-			if (1 == GetItems ().Count) {
-				VersionControlItem vcitem = GetItems ()[0];
-				if (vcitem.Repository is MercurialRepository) {
-					item.Visible = ((MercurialRepository)vcitem.Repository).CanBind (vcitem.Path);
-					return;
-				}
-			} 
-			item.Visible = false;
-		}// CanBind
-
-		/// <summary>
-		/// Binds a file
-		/// </summary>
-		[CommandHandler (MercurialCommands.Bind)]
-		protected void OnBind()
-		{
-			VersionControlItem vcitem = GetItems ()[0];
-			MercurialRepository repo = (MercurialRepository)vcitem.Repository;
-			string boundBranch = repo.GetBoundBranch (vcitem.Path);
-			
-			Dialogs.BranchSelectionDialog bsd = new Dialogs.BranchSelectionDialog (new string[]{boundBranch}, boundBranch, vcitem.Path.FullPath, false, false, false, false);
-			try {
-				if ((int)Gtk.ResponseType.Ok == bsd.Run () && !string.IsNullOrEmpty (bsd.SelectedLocation)) {
-					MercurialTask worker = new MercurialTask ();
-					worker.Description = string.Format ("Binding to {0}", bsd.SelectedLocation);
-					worker.Operation = delegate{ repo.Bind (bsd.SelectedLocation, vcitem.Path, worker.ProgressMonitor); };
-					worker.Start ();
-				}
-			} finally {
-				bsd.Destroy ();
-			}
-		}// OnBind
-		
-		
-		[CommandUpdateHandler (MercurialCommands.Unbind)]
-		protected void CanUnbind (CommandInfo item)
-		{
-			if (1 == GetItems ().Count) {
-				VersionControlItem vcitem = GetItems ()[0];
-				if (vcitem.Repository is MercurialRepository) {
-					item.Visible = ((MercurialRepository)vcitem.Repository).CanUnbind (vcitem.Path);
-					return;
-				}
-			} 
-			item.Visible = false;
-		}// CanUnbind
-
-		/// <summary>
-		/// Unbinds a file
-		/// </summary>
-		[CommandHandler (MercurialCommands.Unbind)]
-		protected void OnUnbind()
-		{
-			VersionControlItem vcitem = GetItems ()[0];
-			MercurialRepository repo = (MercurialRepository)vcitem.Repository;
-			
-			MercurialTask worker = new MercurialTask ();
-			worker.Description = string.Format ("Unbinding {0}", vcitem.Path);
-			worker.Operation = delegate{ repo.Unbind (vcitem.Path, worker.ProgressMonitor); };
-			worker.Start ();
-		}// OnUnbind
 		
 		
 		[CommandUpdateHandler (MercurialCommands.Uncommit)]

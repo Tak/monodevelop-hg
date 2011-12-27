@@ -116,10 +116,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract Dictionary<string, BranchType> GetKnownBranches (string path);
 		public abstract void Init (string path);
 		public abstract void Ignore (string path);
-		public abstract bool IsBound (string path);
-		public abstract string GetBoundBranch (string path);
-		public abstract void Bind (string branchUrl, string localPath, IProgressMonitor monitor);
-		public abstract void Unbind (string localPath, IProgressMonitor monitor);
 		public abstract void Uncommit (string localPath, MonoDevelop.Core.IProgressMonitor monitor);
 		public abstract Annotation[] GetAnnotations (string localPath);
 		public abstract void Export (string localPath, string exportPath, IProgressMonitor monitor);
