@@ -206,22 +206,18 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			serverPath = string.Format ("{0}{1}{2}", Url, Url.EndsWith ("/")? string.Empty: "/", serverPath);
 			// System.Console.WriteLine ("Got publish {0} {1}", serverPath, localPath);
-			Client.StoreCredentials (serverPath);
 			Client.Push  (serverPath, localPath.FullPath, false, false, monitor);
 			return new MercurialRepository (Mercurial, serverPath);
 		}
 		
 		public virtual void Push (string pushLocation, FilePath localPath, bool remember, bool overwrite, bool omitHistory, IProgressMonitor monitor) {
-			Client.StoreCredentials (pushLocation);
 			Client.Push (pushLocation, localPath.FullPath, remember, overwrite, monitor);
 		}// Push
 
 		public virtual void Pull (string pullLocation, FilePath localPath, bool remember, bool overwrite, IProgressMonitor monitor) {
-			Client.StoreCredentials (pullLocation); Client.Pull (pullLocation, localPath.FullPath, remember, overwrite, monitor);
 		}// Pull
 
 		public virtual void Rebase (string pullLocation, FilePath localPath, bool remember, bool overwrite, IProgressMonitor monitor) {
-			Client.StoreCredentials (pullLocation);
 			Client.Rebase (pullLocation, localPath.FullPath, monitor);
 		}// Rebase
 
@@ -243,7 +239,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Checkout (FilePath targetLocalPath, Revision rev, bool recurse, IProgressMonitor monitor)
 		{
-			Client.StoreCredentials (Url);
 			MercurialRevision brev = (null == rev)? new MercurialRevision (this, MercurialRevision.HEAD): (MercurialRevision)rev;
 			Client.Checkout (Url, targetLocalPath.FullPath, brev, recurse, monitor);
 		}

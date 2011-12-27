@@ -315,15 +315,6 @@ namespace MonoDevelop.VersionControl.Mercurial
 		Dictionary<string, BranchType> GetKnownBranches (string path);
 		
 		/// <summary>
-		/// Stores credentials for a given url
-		/// </summary>
-		/// <param name="url">
-		/// A <see cref="System.String"/>: A url of the form: 
-		/// transport://[[user[:password]@]host[:port]]/path
-		/// </param>
-		void StoreCredentials (string url);
-		
-		/// <summary>
 		/// Make a directory into a versioned branch.
 		/// </summary>
 		/// <param name="path">
