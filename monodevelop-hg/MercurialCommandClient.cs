@@ -403,8 +403,12 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 		public override void Export (string localPath, string exportPath, MonoDevelop.Core.IProgressMonitor monitor)
 		{
-			// Implement hg archive
-			throw new NotImplementedException ();
+			try {
+				client.Archive (NormalizePath (exportPath));
+				monitor.ReportSuccess (string.Empty);
+			} catch (CommandException ce) {
+				monitor.ReportError (ce.Message, ce);
+			}
 		}
 
 		public override MercurialRevision[] GetHeads (MercurialRepository repository)
