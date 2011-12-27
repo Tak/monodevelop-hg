@@ -62,7 +62,6 @@
     <Compile Include="MercurialCommands.cs" />
     <Compile Include="Dialogs\BranchSelectionDialog.cs" />
     <Compile Include="Dialogs\PasswordPromptDialog.cs" />
-    <Compile Include="MercurialCLibClient.cs" />
     <Compile Include="gtk-gui\MonoDevelop.VersionControl.Mercurial.Dialogs.BranchSelectionDialog.cs" />
     <Compile Include="gtk-gui\MonoDevelop.VersionControl.Mercurial.Dialogs.PasswordPromptDialog.cs" />
     <Compile Include="MercurialCommandClient.cs" />
@@ -116,7 +115,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\Transmission\Mercurial\Mercurial.csproj">
+    <ProjectReference Include="..\hglib-cli\Mercurial\Mercurial.csproj">
       <Project>{FADE5BAA-E0A3-4B05-A121-CD33A90A76A9}</Project>
       <Name>Mercurial</Name>
     </ProjectReference>
