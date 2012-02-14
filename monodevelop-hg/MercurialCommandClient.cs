@@ -400,6 +400,11 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return client.Outgoing (remote, null).Select (r => FromCommandRevision (repository, r)).ToArray ();
 		}
 
+		public override void Move (string sourcePath, string destinationPath, bool forceOverwrite)
+		{
+			client.Rename (NormalizePath (sourcePath), NormalizePath (destinationPath), forceOverwrite);
+		}
+		
 		public override bool IsMergePending (string localPath)
 		{
 			return (1 < client.Parents (null, null).Count ());

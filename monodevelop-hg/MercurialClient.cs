@@ -122,6 +122,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		public abstract MercurialRevision[] GetHeads (MercurialRepository repository);
 		public abstract MercurialRevision[] GetIncoming (MercurialRepository repository, string remote);
 		public abstract MercurialRevision[] GetOutgoing (MercurialRepository repository, string remote);
+		public abstract void Move (string sourcePath, string destinationPath, bool forceOverwrite);
 		// public abstract RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision);
 		public virtual RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision)
 		{

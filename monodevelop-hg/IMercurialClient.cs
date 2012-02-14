@@ -392,5 +392,19 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// Gets the changes for a specified revision.
 		/// </summary>
 		RevisionPath[] GetRevisionChanges (MercurialRepository repo, MercurialRevision revision);
+		
+		/// <summary>
+		/// Move a file or directory.
+		/// </summary>
+		/// <param name='sourcePath'>
+		/// The source path
+		/// </param>
+		/// <param name='destinationPath'>
+		/// The destination path
+		/// </param>
+		/// <param name='forceOverwrite'>
+		/// Whether to overwrite an existing item
+		/// </param>
+		void Move (string sourcePath, string destinationPath, bool forceOverwrite);
 	}
 }
