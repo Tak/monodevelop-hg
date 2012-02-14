@@ -319,6 +319,16 @@ namespace MonoDevelop.VersionControl.Mercurial
 			VersionInfo info = GetCachedVersionInfo (localFile, false);
 			return (null != info && info.IsVersioned && info.HasLocalChanges);
 		}
+
+		public override void MoveDirectory (FilePath localSrcPath, FilePath localDestPath, bool force, IProgressMonitor monitor)
+		{
+			Client.Move (localSrcPath.FullPath, localDestPath.FullPath, force);
+		}
+
+		public override void MoveFile (FilePath localSrcPath, FilePath localDestPath, bool force, IProgressMonitor monitor)
+		{
+			Client.Move (localSrcPath.FullPath, localDestPath.FullPath, force);
+		}		
 		
 		protected override VersionControlOperation GetSupportedOperations (VersionInfo vinfo)
 		{
