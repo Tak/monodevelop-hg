@@ -1,1 +1,1 @@
-hglib-cli = ssh://hg@bitbucket.org/TakUnity/hglib-cli
+hglib-cli = https://bitbucket.org/TakUnity/hglib-cli
