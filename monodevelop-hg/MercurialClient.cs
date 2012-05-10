@@ -247,6 +247,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 			if (string.IsNullOrEmpty (path))
 				throw new ArgumentException ("Empty path not allowed", "path");
 				
+			if (!(File.Exists (path) || Directory.Exists (path)))
+				return path;
+				
 #if !WINDOWS
 			try {
 				string[] chunks = path.Split (new[]{Path.DirectorySeparatorChar}, StringSplitOptions.RemoveEmptyEntries);
