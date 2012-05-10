@@ -362,10 +362,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			return IsConflicted (localPath);
 		}
-
+		
 		public virtual bool CanPull (FilePath localPath)
 		{
-			return Directory.Exists (localPath.FullPath) && IsVersioned (localPath);
+			return IsProjectOrDirectory (localPath.FullPath) && IsVersioned (localPath);
 		}// CanPull
 
 		public virtual bool CanMerge (FilePath localPath)
@@ -375,7 +375,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		
 		public virtual bool CanUncommit (FilePath localPath)
 		{
-			return Directory.Exists (localPath.FullPath) && IsVersioned (localPath);
+			return IsProjectOrDirectory (localPath.FullPath) && IsVersioned (localPath);
 		}// CanUncommit
 		
 		/// <summary>
@@ -526,7 +526,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// <summary>
 		/// Create a VersionInfo from a LocalStatus
 		/// </summary>
-		private VersionInfo CreateNode (LocalStatus status, Repository repo) 
+		private static VersionInfo CreateNode (LocalStatus status, Repository repo) 
 		{
 			VersionStatus rs = VersionStatus.Unversioned;
 			Revision rr = null;
@@ -545,7 +545,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// <summary>
 		/// Create a VersionInfo[] from an IList<LocalStatus>
 		/// </summary>
-		private VersionInfo[] CreateNodes (Repository repo, IEnumerable<LocalStatus> statuses) {
+		private static VersionInfo[] CreateNodes (Repository repo, IEnumerable<LocalStatus> statuses) {
 			List<VersionInfo> nodes = new List<VersionInfo> (statuses.Count ());
 
 			foreach (LocalStatus status in statuses) {
@@ -559,7 +559,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 		/// <summary>
 		/// Convert an ItemStatus to a VersionStatus
 		/// </summary>
-		private VersionStatus ConvertStatus (ItemStatus status) {
+		private static VersionStatus ConvertStatus (ItemStatus status) {
 			switch (status) {
 			case ItemStatus.Added:
 				return VersionStatus.Versioned | VersionStatus.ScheduledAdd;
@@ -579,5 +579,15 @@ namespace MonoDevelop.VersionControl.Mercurial
 
 			return VersionStatus.Unversioned;
 		}// ConvertStatus
+		
+		/// <summary>
+		/// Determines whether a path is a directory or project/solution file
+		/// </summary>
+		private static bool IsProjectOrDirectory (FilePath localPath)
+		{
+			return Directory.Exists (localPath) ||
+			       MonoDevelop.Projects.Services.ProjectService.IsSolutionItemFile (localPath) ||
+			       MonoDevelop.Projects.Services.ProjectService.IsWorkspaceItemFile (localPath);
+		}// IsProjectOrDirectory
 	}// MercurialRepository
 }
