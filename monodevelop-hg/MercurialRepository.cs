@@ -136,7 +136,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return localFile;
 		}
 
-		public override Revision[] GetHistory (FilePath localFilePath, Revision since)
+		protected override Revision[] OnGetHistory (FilePath localFilePath, Revision since)
 		{
 			if (null == LocalBasePath) {
 				// System.Console.WriteLine ("Getting local base path for {0}", localFile);
@@ -200,9 +200,9 @@ namespace MonoDevelop.VersionControl.Mercurial
 		{
 			return Client.GetRevisionChanges (this, (MercurialRevision)revision);
 		}		
-		
+
 		// Deprecated
-		public override Repository Publish (string serverPath, FilePath localPath, FilePath[] files, string message, IProgressMonitor monitor)
+		protected override Repository OnPublish (string serverPath, FilePath localPath, FilePath[] files, string message, IProgressMonitor monitor)
 		{
 			serverPath = string.Format ("{0}{1}{2}", Url, Url.EndsWith ("/")? string.Empty: "/", serverPath);
 			// System.Console.WriteLine ("Got publish {0} {1}", serverPath, localPath);
@@ -225,44 +225,44 @@ namespace MonoDevelop.VersionControl.Mercurial
 			Client.Merge (this);
 		}// Merge
 		
-		public override void Update (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
+		protected override void OnUpdate (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
 				Client.Update (localPath.FullPath, recurse, monitor);
 		}
 
-		public override void Commit (ChangeSet changeSet, IProgressMonitor monitor)
+		protected override void OnCommit (ChangeSet changeSet, IProgressMonitor monitor)
 		{
 			Client.Commit (changeSet, monitor);
 			FileService.NotifyFileChanged (changeSet.BaseLocalPath);
 		}
 
-		public override void Checkout (FilePath targetLocalPath, Revision rev, bool recurse, IProgressMonitor monitor)
+		protected override void OnCheckout (FilePath targetLocalPath, Revision rev, bool recurse, IProgressMonitor monitor)
 		{
 			MercurialRevision brev = (null == rev)? new MercurialRevision (this, MercurialRevision.HEAD): (MercurialRevision)rev;
 			Client.Checkout (Url, targetLocalPath.FullPath, brev, recurse, monitor);
 		}
 
-		public override void Revert (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
+		protected override void OnRevert (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
 				Client.Revert (localPath.FullPath, recurse, monitor, new MercurialRevision (this, MercurialRevision.HEAD));
 		}
 		
-		public override void Add (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
+		protected override void OnAdd (FilePath[] localPaths, bool recurse, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
 				Client.Add (localPath.FullPath, recurse, monitor);
 		}
 
-		public override string GetTextAtRevision (FilePath repositoryPath, Revision revision)
+		protected override string OnGetTextAtRevision (FilePath repositoryPath, Revision revision)
 		{
 			// System.Console.WriteLine ("Got GetTextAtRevision for {0}", repositoryPath);
 			MercurialRevision brev = (null == revision)? new MercurialRevision (this, MercurialRevision.HEAD): (MercurialRevision)revision;
 			return Client.GetTextAtRevision (repositoryPath.FullPath, brev);
 		}
 
-		public override void RevertToRevision (FilePath localPath, Revision revision, IProgressMonitor monitor)
+		protected override void OnRevertToRevision (FilePath localPath, Revision revision, IProgressMonitor monitor)
 		{
 			if (IsModified (MercurialRepository.GetLocalBasePath (localPath))) {
 				MessageDialog md = new MessageDialog (MonoDevelop.Ide.IdeApp.Workbench.RootWindow, DialogFlags.Modal, 
@@ -281,7 +281,7 @@ namespace MonoDevelop.VersionControl.Mercurial
 			Client.Revert (localPath.FullPath, true, monitor, brev);
 		}
 
-		public override void RevertRevision (FilePath localPath, Revision revision, IProgressMonitor monitor)
+		protected override void OnRevertRevision (FilePath localPath, Revision revision, IProgressMonitor monitor)
 		{
 //			if (IsModified (MercurialRepository.GetLocalBasePath (localPath))) {
 //				MessageDialog md = new MessageDialog (null, DialogFlags.Modal, 
@@ -320,12 +320,12 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return (null != info && info.IsVersioned && info.HasLocalChanges);
 		}
 
-		public override void MoveDirectory (FilePath localSrcPath, FilePath localDestPath, bool force, IProgressMonitor monitor)
+		protected override void OnMoveDirectory (FilePath localSrcPath, FilePath localDestPath, bool force, IProgressMonitor monitor)
 		{
 			Client.Move (localSrcPath.FullPath, localDestPath.FullPath, force);
 		}
 
-		public override void MoveFile (FilePath localSrcPath, FilePath localDestPath, bool force, IProgressMonitor monitor)
+		protected override void OnMoveFile (FilePath localSrcPath, FilePath localDestPath, bool force, IProgressMonitor monitor)
 		{
 			Client.Move (localSrcPath.FullPath, localDestPath.FullPath, force);
 		}		
@@ -410,13 +410,13 @@ namespace MonoDevelop.VersionControl.Mercurial
 			return Client.Diff (localPath, (MercurialRevision)fromRevision, (MercurialRevision)toRevision);
 		}
 
-		public override void DeleteFiles (FilePath[] localPaths, bool force, IProgressMonitor monitor)
+		protected override void OnDeleteFiles (FilePath[] localPaths, bool force, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
 				Client.Remove (localPath.FullPath, force, monitor);
 		}// DeleteFiles
 
-		public override void DeleteDirectories (FilePath[] localPaths, bool force, IProgressMonitor monitor)
+		protected override void OnDeleteDirectories (FilePath[] localPaths, bool force, IProgressMonitor monitor)
 		{
 			foreach (FilePath localPath in localPaths)
 				Client.Remove (localPath.FullPath, force, monitor);
