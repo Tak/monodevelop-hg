@@ -127,6 +127,10 @@
     <Reference Include="MonoDevelop.VersionControl">
       <HintPath>..\..\monodevelop\main\build\AddIns\VersionControl\MonoDevelop.VersionControl.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.NRefactory, Version=5.0.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49">
+      <Private>False</Private>
+      <Package>monodevelop</Package>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
