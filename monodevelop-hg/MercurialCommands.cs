@@ -467,10 +467,10 @@ namespace MonoDevelop.VersionControl.Mercurial
 					worker.Operation = delegate {
 						repo.LocalBasePath = MercurialRepository.GetLocalBasePath (localPath);
 						Revision[] history = repo.GetIncoming (bsd.SelectedLocation);
-						DispatchService.GuiDispatch (() => {
+						DispatchService.GuiDispatch (new MessageHandler(() => {
 							var view = new MonoDevelop.VersionControl.Views.LogView (localPath, true, history, repo);
 							IdeApp.Workbench.OpenDocument (view, true);
-						});
+						}));
 					};
 					worker.Start ();
 				}
